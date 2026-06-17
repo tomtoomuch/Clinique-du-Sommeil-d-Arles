@@ -1,0 +1,39 @@
+
+#appel des procedures avec EXEC
+nbrapneeProc = "exec resultatsnuitsommeil.nbrapnee('id_nuit')"
+nrbhypopnee = "exec resultatsnuitsommeil.nrbhypopnee('id_nuit')"
+nrbrera = "exec resultatsnuitsommeil.nrbrera('id_nuit')"
+nrbtotalevenement = "exec resultatsnuitsommeil.nrbtotalevenement('id_nuit')"
+
+#procedure a mettre dans la bdd SQL
+
+#PROCEDURE nbrapnee
+CREATE DEFINER=`root`@`localhost` PROCEDURE `nbrapnee`()
+BEGIN
+SELECT COUNT(type_evenement)
+FROM evenement_respiratoire
+WHERE type_evenement = 'apnée obstructive' OR 'apnée centrale';
+END
+
+#PROCEDURE nbrhypopnee
+CREATE DEFINER=`root`@`localhost` PROCEDURE `nbrhypopnee`()
+BEGIN
+SELECT COUNT(type_evenement)
+FROM evenement_respiratoire
+WHERE type_evenement = 'hypopnée';
+END
+
+#PROCEDURE nbrrera
+CREATE DEFINER=`root`@`localhost` PROCEDURE `nbrrera`()
+BEGIN
+SELECT COUNT(type_evenement)
+FROM evenement_respiratoire
+WHERE type_evenement = 'RERA';
+END
+
+#PROCEDURE nbrtotalevenement
+CREATE DEFINER=`root`@`localhost` PROCEDURE `nbrtotalevenement`()
+BEGIN
+SELECT COUNT(type_evenement)
+FROM evenement_respiratoire;
+END

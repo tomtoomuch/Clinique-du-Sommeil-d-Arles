@@ -21,7 +21,7 @@ decibels_moy = df["ronflements_db"].mean()
 nb_ronflements_forts = (df["ronflements_db"] > 70).sum()
 
 #position_dominante = MODE(position)
-position_dominante = df["position"].mode()
+position_dominante = df["position"].mode()[0]
 
 #Compter le nombre de secondes où spo2 < 90
 duree_hipoxemie = (df["spo2"] < 90).sum() * 10

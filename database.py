@@ -7,24 +7,22 @@ from transformation_CSV import resultats
 cnx_sqlite = sqlite3.connect("datalake.db")
 cursor = cnx_sqlite.cursor()
 
-# Convertimos nuit_id en entero
 id_nuit = int(nuit_id)
 
-# Crear tabla RAW
-CREATE TABLE raw_capteur (
-    id_raw            INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_nuit           INTEGER NOT NULL,
-    timestamp_sec     INTEGER NOT NULL,
-    spo2              REAL,
-    debit_nasal_pct   REAL,
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS raw_capteur (
+    id_raw INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_nuit INTEGER NOT NULL,
+    timestamp_sec INTEGER NOT NULL,
+    spo2 REAL,
+    debit_nasal_pct REAL,
     effort_thoracique_pct REAL,
-    position          TEXT,
-    ronflements_db    REAL,
-    flag_evenement    INTEGER CHECK (flagevenement IN (0,1))
-);
+    position TEXT,
+    ronflements_db REAL,
+    flag_evenement INTEGER CHECK (flag_evenement IN (0,1))
+)
+""")
 
-
-# Crear tabla CURATED : Permet d’alimenter PowerBI / Tableau / Metabase / IA.
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS curated_nuit (
     id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,11 +38,10 @@ CREATE TABLE IF NOT EXISTS curated_nuit (
     position_dominante TEXT,
     decibels_max REAL,
     decibels_moy REAL,
-    nb_ronflements_fortes INTEGER
+    nb_ronflements_forts INTEGER
 )
 """)
 
-# Insertion des données brutes du CSV dans raw_capteur
 for _, row in df.iterrows():
     cursor.execute("""
     INSERT INTO raw_capteur (
@@ -68,3 +65,41 @@ for _, row in df.iterrows():
         row["ronflements_db"],
         row["flag_evenement"]
     ))
+
+cursor.execute("""
+INSERT INTO curated_nuit (
+    id_nuit,
+    spo2_min,
+    spo2_moy,
+    spo2_mediane,
+    nb_apnees,
+    nb_hypopnees,
+    nb_rera,
+    nb_microeveils,
+    duree_hypoxie_min,
+    position_dominante,
+    decibels_max,
+    decibels_moy,
+    nb_ronflements_forts
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", (
+    id_nuit,
+    resultats["spo2_min"],
+    resultats["spo2_moy"],
+    resultats["spo2_mediane"],
+    0,
+    0,
+    0,
+    0,
+    resultats["duree_hypoxie_min"],
+    resultats["position_dominante"],
+    resultats["decibels_max"],
+    resultats["decibels_moy"],
+    resultats["nb_ronflements_forts"]
+))
+
+cnx_sqlite.commit()
+cnx_sqlite.close()
+
+print("Datalake SQLite créé et rempli avec succès.")

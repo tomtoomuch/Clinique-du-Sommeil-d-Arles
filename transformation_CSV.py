@@ -35,7 +35,7 @@ resultats = {
     "decibels_moy": df["ronflements_db"].mean(),
     "nb_ronflements": ((df["ronflements_db"] > 70).sum()) * 7,
     "position_dominante": df["position"].mode(),
-    "duree_hypoxemie": (df["spo2"] < 90).sum() * 10
+    "duree_hypoxemie": (df["spo2"] < 90).sum() * (10/60)
 }
 
 # Extrapolation des valeurs pertinentes : nb_ronflements_forts, position_dominante, duree_hypoxemie
@@ -44,3 +44,7 @@ resultats.update([("nb_ronflements", nb_ronflements_forts * 7), ("position_domin
 print("Résultats extrapolés :")
 for cle in resultats:
     print(cle, ":", resultats.get(cle))
+
+# Production rapport médical de la nuit (-> médecin)
+with open("./raw/traite/resultats_csv_extrapoles.csv", mode="w", encoding="utf-8-sig") as fichier_csv:
+    writer = csv.writer(fichier_csv, delimiter=",")

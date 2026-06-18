@@ -1,0 +1,25 @@
+{
+  "name": "clinique-du-sommeil-d-arles-pipeline-etl-sur-nuit-d-tude",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmorkos-cyber/Clinique-du-Sommeil-d-Arles-Pipeline-ETL-sur-nuit-d-tude.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mmorkos-cyber/Clinique-du-Sommeil-d-Arles-Pipeline-ETL-sur-nuit-d-tude/issues"
+  },
+  "homepage": "https://github.com/mmorkos-cyber/Clinique-du-Sommeil-d-Arles-Pipeline-ETL-sur-nuit-d-tude#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mysql": "^2.18.1"
+  }
+}

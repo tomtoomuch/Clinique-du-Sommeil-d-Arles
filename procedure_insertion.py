@@ -14,7 +14,7 @@ cnx = mysql.connector.connect(
 )
 
 id_nuit = nuit_id
-spo2_min = 74.0
+spo2_min = df_nuit[spo2_min]
 spo2_moy = 91.4383
 spo2_mediane = 94.45
 #duree_sommeil_min = 420

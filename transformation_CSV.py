@@ -1,6 +1,5 @@
-import pandas as pd
+from extract_csv import  df
 
-df = pd.read_csv("./raw/signal-psg-patient-1-nuit-1.csv")
 
 # spo2_min = MIN(spo2)
 spo2_min = df["spo2"][0].min() 

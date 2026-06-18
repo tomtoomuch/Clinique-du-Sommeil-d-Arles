@@ -1,11 +1,12 @@
 from extract_csv import  df
+import pandas as pd
 
 
 # spo2_min = MIN(spo2)
-spo2_min = df["spo2"][0].min() 
+spo2_min = df["spo2"].min() 
 
 # spo2_moy = AVG(spo2)
-spo2_moy = df["spo2"][0].mean() 
+spo2_moy = df["spo2"].mean() 
 
 # spo2_mediane = MEDIAN(spo2)
 spo2_mediane = df["spo2"].median() 

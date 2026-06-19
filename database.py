@@ -1,34 +1,30 @@
 import sqlite3
 import mysql.connector
 
+from mdp import motdepasse, bdd, port
 from extract_csv import df, nuit_id
 from transformation_CSV import resultats
 
 #Variables convertidas de diccionario pandas a solo variable 
 id_nuit = int(nuit_id)
-
 spo2_min = float(resultats["spo2_min"])
 spo2_moy = float(resultats["spo2_moy"])
 spo2_mediane = float(resultats["spo2_mediane"])
-
 duree_hypoxie_min = float(resultats["duree_hypoxie_min"])
-
 position_dominante = str(resultats["position_dominante"])
-
 decibels_max = float(resultats["decibels_max"])
 decibels_moy = float(resultats["decibels_moy"])
-
 nb_ronflements_forts = int(resultats["nb_ronflements_forts"])
 
 #conecto mysql
 
 cnx_mysql = mysql.connector.connect(
-    user="root",
-    password="Malbosc!2025",
-    host="localhost",
-    database="resultatsnuitsommeil",
-    port=3306,
-    use_pure=True
+    user = 'root',
+    password = motdepasse,
+    host = 'localhost',
+    database = bdd,
+    port = port,
+    use_pure= True
 )
 
 cur_mysql = cnx_mysql.cursor(dictionary=True)
@@ -47,7 +43,6 @@ ligne_mysql = cur_mysql.fetchone()
 nb_apnees = int(ligne_mysql["nb_apnees"])
 nb_hypopnees = int(ligne_mysql["nb_hypopnees"])
 nb_rera = int(ligne_mysql["nb_rera"])
-
 # calcule
 nb_microeveils = nb_apnees + nb_hypopnees + nb_rera
 
@@ -94,6 +89,10 @@ CREATE TABLE IF NOT EXISTS curated_nuit (
     nb_ronflements_forts INTEGER
 )
 """)
+
+
+cursor.execute("DELETE FROM raw_capteur WHERE id_nuit = ?", (id_nuit,))
+cursor.execute("DELETE FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
 
 #llenado de raw
 

@@ -1,6 +1,7 @@
 import mysql.connector
 from extract_csv import nuit_id
 from transformation_CSV import df_nuit
+from mdp import motdepasse, bdd, port
 
 
 print(df_nuit)
@@ -9,10 +10,10 @@ parametre = (nuit_id)
 
 cnx = mysql.connector.connect(
     user = 'root',
-    password = 'Llge8334@',
+    password = motdepasse,
     host = 'localhost',
-    database = 'resultatsnuitsommeil',
-    port = '3306'
+    database = bdd,
+    port = port
 )
 
 id_nuit = int(nuit_id)

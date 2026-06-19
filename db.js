@@ -1,11 +1,11 @@
 const db = require('mysql');
-
+const {motDePasse, bdd, port} = require('./mdp.js')
 const connex = db.createConnection({
     host : 'localhost',
     user : 'root',
-    password : '123456789',
-    database: 'resultatsnuitsommeil',
-    port: '3306'
+    password : motDePasse,
+    database: bdd,
+    port: port
 })
 // modifier les identifiants pour acceder à la BDD
 

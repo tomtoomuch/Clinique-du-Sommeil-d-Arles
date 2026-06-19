@@ -1,15 +1,16 @@
 import mysql.connector
 from extract_csv import nuit_id
+from mdp import motdepasse, bdd, port
 
 nbrapneeProc = "EXEC clinique_sommeil.nbrapnee(?)"
 parametre = (nuit_id)
 
 cnx = mysql.connector.connect(
     user = 'root',
-    password = '4cc3sB4s3D3D*nn33s',
+    password = motdepasse,
     host = 'localhost',
-    database = 'clinique_sommeil',
-    port = '3308'
+    database = bdd,
+    port = port
 )
 
 cur = cnx.cursor(dictionary=True)

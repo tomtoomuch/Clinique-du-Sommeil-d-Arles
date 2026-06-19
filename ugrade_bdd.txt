@@ -18,7 +18,7 @@ IN position_dominante VARCHAR (20),
 IN duree_hypoxie_min INT
 )
 BEGIN
-INSERT INTO resultat_nuit (
+INSERT INTO resultat_nuit(
     id_nuit,
     id_medecin_validateur,
     date_validation,
@@ -29,6 +29,7 @@ INSERT INTO resultat_nuit (
     nb_apnees,
     nb_hypopnees,
     nb_rera,
+    nb_microeveils,
     duree_sommeil_min,
     duree_hypoxie_min,
     position_dominante,
@@ -48,8 +49,13 @@ VALUES (
     CURDATE(),
 
     (SELECT COUNT(*)
-     FROM evenement_respiratoire
-     WHERE id_nuit = p_id_nuit),
+    FROM evenement_respiratoire
+    WHERE id_nuit = p_id_nuit
+      AND type_evenement IN (
+          'apnée obstructive',
+          'apnée centrale',
+          'hypopnée')
+) / 7,
 
     spo2_min,
     spo2_moy,
@@ -69,6 +75,11 @@ VALUES (
      FROM evenement_respiratoire
      WHERE id_nuit = p_id_nuit
        AND type_evenement = 'RERA'),
+       
+	(SELECT COUNT(*)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit
+       AND type_evenement IN ('apnée obstructive','apnée centrale','RERA')),
 
     420,
 

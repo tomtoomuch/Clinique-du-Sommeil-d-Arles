@@ -1,43 +1,56 @@
-//# CONTRIBUTING.md
+// CONTRIBUTING.md
 
 # Règles de contribution du projet.
 
-### Ce document établis les rêgles de contribution du projet Clinique-du-Sommeil-dArles
+> Ce document établit les rêgles de contribution au projet de SI 'métiers' de la Clinique du Sommeil d'Arles.
 
-## Convention de nommage: Nom de branch
+Une branche ```dev``` reçoit les contributions au développement à valider. Soyons attentifs à fabriquer et maintenir un code propre et bien commenté afin de faciliter les apports de chacun à tout instant.
 
-```console
+
+## Convention de nommages
+
+### Les branches
+
+Chaque utilisateur crée sa branche en utilisant son blaze ou son prénom. 
+```
+git branch tonprenomoupseudo
+```
+
+Afin d'obtenir plus de clarté dans l'arbre de commits et une meilleure compréhension des contributions, il est souhaitable de définir une branche par tâche. Ces branches peuvent être fusionnées directement avec la branche de développement ```dev``` avant d'être poussées.
+```
 feat/nom-de-la-fonctionnalite
 
-fix/nom-du-bug
+fix/correction-apportee
 
-docs/nom-de-la-doc
+doc/nom-de-la-doc
 
 data/nom-de-la-tache
 
-py/nom-du-script
+_py/nom-du-script_
 ```
 
-## Convention de nommage: Noms des commits :
+### Les commits
+
+Encore une fois, pour garantir clarté et compréhension des contributions. Nous veillerons à nommer nos commits selon 
 
 ```console
-<Feat> Ajout du badge nouvelle version
+<feat> Ajout de la fonctionnaliité
 
-<Fix> Correction du lien analyse drones
+<fix> Correction réalisée
 
-<Data> Correction du chemin de la base SQLite
+<data> Correction, amélioration apportée
 
-<Docs> Mise à jour du README
+<docs> Mise à jour du README
 ```
 
 ## Règles obligatoires pour les pull requests:
 
-• une branche par ticket ;
+• une branche par ticket
 
-• une Pull Request par ticket ;
+• une Pull Request par ticket
 
-• pas de push direct sur main ;
+• pas de push direct sur main
 
-• pas de push direct sur develop, sauf consigne explicite ;
+• pas de push direct sur develop, sauf consigne explicite
 
-• validation obligatoire par Valentin avant fusion. 
+• validation obligatoire par l'intégrateur avant fusion

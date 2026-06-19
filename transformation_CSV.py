@@ -22,6 +22,7 @@ nb_ronflements_forts = (df["ronflements_db"] > 70).sum() * 7
 #position_dominante = MODE(position)
 position_dominante = df["position"].mode()[0]
 
+<<<<<<< HEAD
 #Compter le nombre de secondes où spo2 < 90 (extrapolé)
 duree_hypoxie_min = (df["spo2"] < 90).sum() * (10 / 60) * 7
 
@@ -37,6 +38,25 @@ resultats = {
     "duree_hypoxie_min": duree_hypoxie_min
 }
 
+=======
+#Compter le nombre de secondes où spo2 < 90
+duree_hypoxie = (df["spo2"] < 90).sum() * 10
+
+
+resultats = {
+    "spo2_min": df["spo2"].min(),
+    "spo2_moy": df["spo2"].mean(),
+    "spo2_mediane": df["spo2"].median(),
+    "decibels_max": df["ronflements_db"].max(),
+    "decibels_moy": df["ronflements_db"].mean(),
+    "nb_ronflements": ((df["ronflements_db"] > 70).sum()) * 7,
+    "position_dominante": df["position"].mode(),
+    "duree_hypoxie": (df["spo2"] < 90).sum() * (10/60) * 7
+}
+
+# Extrapolation des valeurs pertinentes : nb_ronflements_forts, position_dominante, duree_hypoxemie
+resultats.update([("nb_ronflements", nb_ronflements_forts * 7), ("position_dominante", position_dominante), ("duree_hypoxie", duree_hypoxie)])
+>>>>>>> thomas
 
 print("Résultats extrapolés :")
 for cle in resultats:

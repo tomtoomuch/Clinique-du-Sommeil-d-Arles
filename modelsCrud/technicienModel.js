@@ -16,5 +16,19 @@ function vueTechniecienCpap(){
 }
 
 
+function vueTechniecienPsg(){
+    return new Promise ((resolve,reject) => { 
+        db.query('SELECT * from vuetechnicienpsg;', (err,rows) => {
+                if (err){
+                        console.log(err.message);
+                        return reject(err);
+                }
+                if (rows){
+                    resolve(rows);
+                }
+            })
+    })
+}
 
-module.exports = {vueTechniecienCpap}
+
+module.exports = {vueTechniecienCpap, vueTechniecienPsg}

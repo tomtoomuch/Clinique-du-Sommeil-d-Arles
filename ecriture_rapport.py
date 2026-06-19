@@ -2,9 +2,6 @@ from extract_csv import nuit_id, patient_id
 from extract_sql import resultat_nuit
 import pandas as pd
 
-
-
-
 url = "./nuit/nuit-"+nuit_id+"/rapport-patient-"+patient_id+"-nuit-"+nuit_id+".txt"
 
 print(url)
@@ -19,8 +16,3 @@ with open(url, "w", encoding="utf-8-sig") as rapport:
     rapport.write(f"Décibels max : {resultat_nuit[0]["decidels_max"]} | moy : {resultat_nuit[0]["decibels_moy"]}")
     rapport.write(f"Ronflements forts (>70dB) : {resultat_nuit[0]["nb_ronflements_forts"]}")
     rapport.write(f"Durée sommeil : {resultat_nuit[0]["duree_sommeil_min"]} min")
-
-
-
-
-

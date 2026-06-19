@@ -38,9 +38,9 @@ resultats = {
 }
 
 
-print("Résultats extrapolés :")
-for cle in resultats:
-    print(cle, ":", resultats.get(cle))
+#print("Résultats extrapolés :")
+#for cle in resultats:
+#    print(cle, ":", resultats.get(cle))
 
 df_nuit = pd.DataFrame([resultats])
-print(df_nuit)
+#print(df_nuit)

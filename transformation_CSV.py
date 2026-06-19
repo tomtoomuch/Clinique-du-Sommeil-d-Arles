@@ -40,10 +40,10 @@ resultats = {
 # Extrapolation des valeurs pertinentes : nb_ronflements_forts, position_dominante, duree_hypoxemie
 resultats.update([("nb_ronflements", nb_ronflements_forts * 7), ("position_dominante", position_dominante), ("duree_hypoxie", duree_hypoxie)])
 
-print("Résultats extrapolés :")
-for cle in resultats:
-    print(cle, ":", resultats.get(cle))
+#print("Résultats extrapolés :")
+#for cle in resultats:
+#    print(cle, ":", resultats.get(cle))
 
 
 df_nuit = pd.DataFrame([resultats])
-print(df_nuit)
+#print(df_nuit)

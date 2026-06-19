@@ -2,11 +2,6 @@ import mysql.connector
 from extract_csv import nuit_id
 from transformation_CSV import df_nuit
 
-
-print(df_nuit)
-#nbrapneeProc = "EXEC clinique_sommeil.nbrapnee(?)"
-parametre = (nuit_id)
-
 cnx = mysql.connector.connect(
     user = 'root',
     password = '4cc3sB4s3D3D*nn33s',
@@ -29,3 +24,4 @@ nb_ronflements_forts = df_nuit["nb_ronflements"]
 cur = cnx.cursor(dictionary=True)
 cur.callproc('insert_data_resultat',(id_nuit, spo2_min, spo2_moy, spo2_mediane, nb_ronflements_forts, decibels_max, decibels_moy, position_dominante, duree_hypoxie_min))
 cnx.commit()
+cnx.close()

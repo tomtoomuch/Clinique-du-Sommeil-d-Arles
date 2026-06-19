@@ -1,6 +1,7 @@
 import mysql.connector
 from extract_csv import nuit_id
 from transformation_CSV import df_nuit
+from mdp import motdepasse
 
 
 print(df_nuit)
@@ -13,10 +14,9 @@ cnx = mysql.connector.connect(
     host = 'localhost',
     database = 'resultatsnuitsommeil',
     port = '3306',
+    use_pure=True
   )
  
-
-
 id_nuit = int(nuit_id)
 spo2_min = float(df_nuit["spo2_min"].iloc[0])
 spo2_moy = float(df_nuit["spo2_moy"].iloc[0])

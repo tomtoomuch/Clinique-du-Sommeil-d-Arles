@@ -1,49 +1,66 @@
 import sqlite3
-import mysql.connector  
+import mysql.connector
+
 from extract_csv import df, nuit_id
 from transformation_CSV import resultats
 
+#Variables convertidas de diccionario pandas a solo variable 
 id_nuit = int(nuit_id)
 
-#contecto con mi SQL 
+spo2_min = float(resultats["spo2_min"])
+spo2_moy = float(resultats["spo2_moy"])
+spo2_mediane = float(resultats["spo2_mediane"])
+
+duree_hypoxie_min = float(resultats["duree_hypoxie_min"])
+
+position_dominante = str(resultats["position_dominante"])
+
+decibels_max = float(resultats["decibels_max"])
+decibels_moy = float(resultats["decibels_moy"])
+
+nb_ronflements_forts = int(resultats["nb_ronflements_forts"])
+
+#conecto mysql
+
 cnx_mysql = mysql.connector.connect(
     user="root",
     password="Malbosc!2025",
     host="localhost",
     database="resultatsnuitsommeil",
-    port=3306
+    port=3306,
+    use_pure=True
 )
 
-#esa fila se transforma en un diccionario:
 cur_mysql = cnx_mysql.cursor(dictionary=True)
 
 cur_mysql.execute("""
 SELECT
     nb_apnees,
     nb_hypopnees,
-    nb_rera,
-    FROM resultat_nuit
+    nb_rera
+FROM resultat_nuit
 WHERE id_nuit = %s
 """, (id_nuit,))
 
-#Dame la primera fila del resultado de la consulta
 ligne_mysql = cur_mysql.fetchone()
 
-nb_apnees = ligne_mysql["nb_apnees"]
-nb_hypopnees = ligne_mysql["nb_hypopnees"]
-nb_rera = ligne_mysql["nb_rera"]
-# microéveils = nombre total d'événements
+nb_apnees = int(ligne_mysql["nb_apnees"])
+nb_hypopnees = int(ligne_mysql["nb_hypopnees"])
+nb_rera = int(ligne_mysql["nb_rera"])
+
+# calcule
 nb_microeveils = nb_apnees + nb_hypopnees + nb_rera
 
 cur_mysql.close()
 cnx_mysql.close()
 
+#conection SQL
 
-#Conecto a sqlite
 cnx_sqlite = sqlite3.connect("datalake.db")
 cursor = cnx_sqlite.cursor()
 
-#primera tabla Raw
+#tabla raw
+
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS raw_capteur (
     id_raw INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,7 +75,7 @@ CREATE TABLE IF NOT EXISTS raw_capteur (
 )
 """)
 
-#segunda tabla Tabla curada
+#Tabla curada 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS curated_nuit (
     id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,7 +95,10 @@ CREATE TABLE IF NOT EXISTS curated_nuit (
 )
 """)
 
+#llenado de raw
+
 for _, row in df.iterrows():
+
     cursor.execute("""
     INSERT INTO raw_capteur (
         id_nuit,
@@ -93,14 +113,16 @@ for _, row in df.iterrows():
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         id_nuit,
-        row["timestamp_sec"],
-        row["spo2"],
-        row["debit_nasal_pct"],
-        row["effort_thoracique_pct"],
-        row["position"],
-        row["ronflements_db"],
-        row["flag_evenement"]
+        int(row["timestamp_sec"]),
+        float(row["spo2"]),
+        float(row["debit_nasal_pct"]),
+        float(row["effort_thoracique_pct"]),
+        str(row["position"]),
+        float(row["ronflements_db"]),
+        int(row["flag_evenement"])
     ))
+
+#llenado de curate
 
 cursor.execute("""
 INSERT INTO curated_nuit (
@@ -121,19 +143,20 @@ INSERT INTO curated_nuit (
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, (
     id_nuit,
-    resultats["spo2_min"],
-    resultats["spo2_moy"],
-    resultats["spo2_mediane"],
+    spo2_min,
+    spo2_moy,
+    spo2_mediane,
     nb_apnees,
     nb_hypopnees,
     nb_rera,
     nb_microeveils,
-    resultats["duree_hypoxie_min"],
-    resultats["position_dominante"],
-    resultats["decibels_max"],
-    resultats["decibels_moy"],
-    resultats["nb_ronflements_forts"]
+    duree_hypoxie_min,
+    position_dominante,
+    decibels_max,
+    decibels_moy,
+    nb_ronflements_forts
 ))
+
 
 cnx_sqlite.commit()
 cnx_sqlite.close()

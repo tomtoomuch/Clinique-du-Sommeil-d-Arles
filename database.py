@@ -1,14 +1,49 @@
-# Exporter dans SQLite (datalake): archiver les données brutes.
-
 import sqlite3
+import mysql.connector  
 from extract_csv import df, nuit_id
 from transformation_CSV import resultats
 
+id_nuit = int(nuit_id)
+
+#contecto con mi SQL 
+cnx_mysql = mysql.connector.connect(
+    user="root",
+    password="Malbosc!2025",
+    host="localhost",
+    database="resultatsnuitsommeil",
+    port=3306
+)
+
+#esa fila se transforma en un diccionario:
+cur_mysql = cnx_mysql.cursor(dictionary=True)
+
+cur_mysql.execute("""
+SELECT
+    nb_apnees,
+    nb_hypopnees,
+    nb_rera,
+    FROM resultat_nuit
+WHERE id_nuit = %s
+""", (id_nuit,))
+
+#Dame la primera fila del resultado de la consulta
+ligne_mysql = cur_mysql.fetchone()
+
+nb_apnees = ligne_mysql["nb_apnees"]
+nb_hypopnees = ligne_mysql["nb_hypopnees"]
+nb_rera = ligne_mysql["nb_rera"]
+# microéveils = nombre total d'événements
+nb_microeveils = nb_apnees + nb_hypopnees + nb_rera
+
+cur_mysql.close()
+cnx_mysql.close()
+
+
+#Conecto a sqlite
 cnx_sqlite = sqlite3.connect("datalake.db")
 cursor = cnx_sqlite.cursor()
 
-id_nuit = int(nuit_id)
-
+#primera tabla Raw
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS raw_capteur (
     id_raw INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,6 +58,7 @@ CREATE TABLE IF NOT EXISTS raw_capteur (
 )
 """)
 
+#segunda tabla Tabla curada
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS curated_nuit (
     id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,10 +124,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     resultats["spo2_min"],
     resultats["spo2_moy"],
     resultats["spo2_mediane"],
-    0,
-    0,
-    0,
-    0,
+    nb_apnees,
+    nb_hypopnees,
+    nb_rera,
+    nb_microeveils,
     resultats["duree_hypoxie_min"],
     resultats["position_dominante"],
     resultats["decibels_max"],

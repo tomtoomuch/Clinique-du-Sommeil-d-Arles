@@ -9,23 +9,23 @@ parametre = (nuit_id)
 
 cnx = mysql.connector.connect(
     user = 'root',
-    password = '4cc3sB4s3D3D*nn33s',
+    password = 'Malbosc!2025',
     host = 'localhost',
-    database = 'clinique_sommeil',
-    port = '3308'
-)
+    database = 'resultatsnuitsommeil',
+    port = '3306',
+  )
 
 id_nuit = nuit_id
 spo2_min = df_nuit["spo2_min"]
 spo2_moy = df_nuit["spo2_moy"]
 spo2_mediane = df_nuit["spo2_mediane"]
-#duree_sommeil_min = 420
-duree_hypoxie_min = df_nuit["duree_hypoxie"]
-position_dominante = df_nuit["position_dominante"]
+nb_ronflements_forts = df_nuit["nb_ronflements_forts"]
 decibels_max = df_nuit["decibels_max"]
 decibels_moy = df_nuit["decibels_moy"]
-nb_ronflements_forts = df_nuit["nb_ronflements"]
+position_dominante = df_nuit["position_dominante"]
+#duree_sommeil_min = 420
+duree_hypoxie_min = df_nuit["duree_hypoxie_min"]
 
 cur = cnx.cursor(dictionary=True)
-cur.callproc('insert_data_resultat',(id_nuit, spo2_min, spo2_moy, spo2_mediane, nb_ronflements_forts, decibels_max, decibels_moy, position_dominante, duree_hypoxie_min))
+cur.callproc('insert_data_resultat',(id_nuit, spo2_min, spo2_moy, spo2_mediane, nb_ronflements_forts,decibels_max, decibels_moy,  position_dominante, duree_hypoxie_min))
 cnx.commit()

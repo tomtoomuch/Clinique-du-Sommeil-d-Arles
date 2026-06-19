@@ -14,13 +14,8 @@ with open(url, "w", encoding="utf-8-sig") as rapport:
     rapport.write(f"SpO2 min : {resultat_nuit[0]["spo2_min"]} | moy : {resultat_nuit[0]["spo2_moy"]} | médiane : {resultat_nuit[0]["spo2_mediane"]}")
     rapport.write(f"nb_apnees : {resultat_nuit[0]["nb_apnees"]} | nb_hypopnees : {resultat_nuit[0]["nb_hypopnees"]} | nb_rera : {resultat_nuit[0]["nb_rera"]} | nb_microeveils : {resultat_nuit[0]["nb_microeveils"]}")
     rapport.write(f"Position dominante : {resultat_nuit[0]["position_dominante"]}")
-    rapport.write(f"Durée hypoxie : 106.2 min
-    rapport.write(f"Durée apnée moy : 39s | max : 65s
-    rapport.write(f"Décibels max : 79.0 | moy : 61.8
-    rapport.write(f"Ronflements forts (>70dB) : 749
-    rapport.write(f"Durée sommeil : 420 min")
-
-
-
-
-
+    rapport.write(f"Durée hypoxie : {resultat_nuit[0]["duree_hypoxie_min"]} min")
+    rapport.write(f"Durée apnée moy : {resultat_nuit[0]["duree_apnee_moy_sec"]} | max : {resultat_nuit[0]["duree_apnee_max_sec"]}s")
+    rapport.write(f"Décibels max : {resultat_nuit[0]["decidels_max"]} | moy : {resultat_nuit[0]["decibels_moy"]}")
+    rapport.write(f"Ronflements forts (>70dB) : {resultat_nuit[0]["nb_ronflements_forts"]}")
+    rapport.write(f"Durée sommeil : {resultat_nuit[0]["duree_sommeil_min"]} min")

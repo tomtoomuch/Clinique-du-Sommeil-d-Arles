@@ -91,71 +91,78 @@ CREATE TABLE IF NOT EXISTS curated_nuit (
 """)
 
 
-cursor.execute("DELETE FROM raw_capteur WHERE id_nuit = ?", (id_nuit,))
-cursor.execute("DELETE FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
-
 #llenado de raw
 
-for _, row in df.iterrows():
+cursor.execute("SELECT COUNT(*) FROM raw_capteur WHERE id_nuit = ?", (id_nuit,))
+existe_raw = cursor.fetchone()[0]
 
-    cursor.execute("""
-    INSERT INTO raw_capteur (
-        id_nuit,
-        timestamp_sec,
-        spo2,
-        debit_nasal_pct,
-        effort_thoracique_pct,
-        position,
-        ronflements_db,
-        flag_evenement
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        id_nuit,
-        int(row["timestamp_sec"]),
-        float(row["spo2"]),
-        float(row["debit_nasal_pct"]),
-        float(row["effort_thoracique_pct"]),
-        str(row["position"]),
-        float(row["ronflements_db"]),
-        int(row["flag_evenement"])
-    ))
+if existe_raw == 0:
+    for _, row in df.iterrows():
+        cursor.execute("""
+        INSERT INTO raw_capteur (
+            id_nuit,
+            timestamp_sec,
+            spo2,
+            debit_nasal_pct,
+            effort_thoracique_pct,
+            position,
+            ronflements_db,
+            flag_evenement
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            id_nuit,
+            int(row["timestamp_sec"]),
+            float(row["spo2"]),
+            float(row["debit_nasal_pct"]),
+            float(row["effort_thoracique_pct"]),
+            str(row["position"]),
+            float(row["ronflements_db"]),
+            int(row["flag_evenement"])
+        ))
+else:
+    print(f"raw_capteur déjà rempli pour id_nuit = {id_nuit}")
 
 #llenado de curate
 
-cursor.execute("""
-INSERT INTO curated_nuit (
-    id_nuit,
-    spo2_min,
-    spo2_moy,
-    spo2_mediane,
-    nb_apnees,
-    nb_hypopnees,
-    nb_rera,
-    nb_microeveils,
-    duree_hypoxie_min,
-    position_dominante,
-    decibels_max,
-    decibels_moy,
-    nb_ronflements_forts
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-""", (
-    id_nuit,
-    spo2_min,
-    spo2_moy,
-    spo2_mediane,
-    nb_apnees,
-    nb_hypopnees,
-    nb_rera,
-    nb_microeveils,
-    duree_hypoxie_min,
-    position_dominante,
-    decibels_max,
-    decibels_moy,
-    nb_ronflements_forts
-))
+cursor.execute("SELECT COUNT(*) FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
+existe_curated = cursor.fetchone()[0]
 
+if existe_curated == 0:
+    cursor.execute("""
+    INSERT INTO curated_nuit (
+        id_nuit,
+        spo2_min,
+        spo2_moy,
+        spo2_mediane,
+        nb_apnees,
+        nb_hypopnees,
+        nb_rera,
+        nb_microeveils,
+        duree_hypoxie_min,
+        position_dominante,
+        decibels_max,
+        decibels_moy,
+        nb_ronflements_forts
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        id_nuit,
+        spo2_min,
+        spo2_moy,
+        spo2_mediane,
+        nb_apnees,
+        nb_hypopnees,
+        nb_rera,
+        nb_microeveils,
+        duree_hypoxie_min,
+        position_dominante,
+        decibels_max,
+        decibels_moy,
+        nb_ronflements_forts
+    ))
+else:
+    print(f"curated_nuit déjà rempli pour id_nuit = {id_nuit}")
 
 cnx_sqlite.commit()
 cnx_sqlite.close()

@@ -1,10 +1,10 @@
 const {connex} = require('../db.js');
 const db = connex;
 
-function findUserByMailAndPassword(mail, password, callback) {
+function findUserByMailAndPassword(email, password, callback) {
     return new Promise ((resolve,reject) => { 
-        db.query('SELECT id, mail, password, role FROM useers WHERE mail = ? AND password = ?;',
-            [mail, password],
+        db.query('SELECT id, email, password, role FROM personnel WHERE email = ? AND password = ?;',
+            [email, password],
             (err,row) => {
                 if (err){
                         console.log(err.message);

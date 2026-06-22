@@ -1,7 +1,8 @@
 const {loginUtilisateur} = require('../modelsCrud/loginModel');
 
 exports.connexionUtilisateur = async (req,res) => {
-    const login = await findUserByMailAndPassword();
+    const { email, password } = req.body
+    const login = await findUserByMailAndPassword(email,password);
     return res.status(200).json({
             success: true,
             message: "Connexion validée",

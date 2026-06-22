@@ -5,8 +5,8 @@ app.use(express.json());
 const loginRoute = require('./routersCrud/loginRouter');
 const medecinRoute = require('./routersCrud/medecinRouter');
 const technicienRoute = require('./routersCrud/technicienRouter');
- 
-app.use("/login", loginRoute);
+
+app.use("/api/users/", loginRoute);
 app.use("/api/medecin/", medecinRoute);
 app.use("/api/techicien/", technicienRoute);
 

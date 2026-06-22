@@ -1,8 +1,11 @@
 const {loginUtilisateur} = require('../modelsCrud/loginModel');
 
-exports.afficherTout = async (req,res) => {
-    const tout = await getMedecin();
+exports.connexionUtilisateur = async (req,res) => {
+    const login = await findUserByMailAndPassword();
     return res.status(200).json({
-            "medecin" : tout
+            success: true,
+            message: "Connexion validée",
+            id: user.id,
+            role: user.role
         })
 }

@@ -3,3 +3,6 @@ node_modules/
 __pycache__/
 mdp.py
 mdp.js
+datalake.db
+raw/**
+nuits/**

@@ -31,6 +31,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector import Error as MySQLError
+from mdp import motdepasse, bdd, port
 
 
 # ============================================================
@@ -39,8 +40,9 @@ from mysql.connector import Error as MySQLError
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "Simplon34!",
-    "database": "clinic",
+    "password": motdepasse,
+    "database": bdd,
+    "port": port
 }
 
 DATALAKE_PATH = "datalake.db"
@@ -79,7 +81,7 @@ def trouver_csv_depuis_id_nuit(id_nuit, dossier_raw=DOSSIER_RAW):
         raise FileNotFoundError(
             f"Aucun fichier CSV trouvé pour id_nuit={id_nuit} "
             f"dans le dossier '{dossier_raw}/'. "
-            f"Format attendu : signal_psg_patient_<id_patient>_nuit_{id_nuit}.csv"
+            f"Format attendu : signal-psg-patient-<id_patient>-nuit-{id_nuit}.csv"
         )
 
     if len(fichiers_trouves) > 1:
@@ -99,7 +101,7 @@ def trouver_csv_depuis_id_nuit(id_nuit, dossier_raw=DOSSIER_RAW):
     except (IndexError, ValueError):
         raise ValueError(
             f"Impossible d'extraire id_patient depuis '{nom_fichier}'. "
-            f"Format attendu : signal_psg_patient_<id_patient>_nuit_<id_nuit>.csv"
+            f"Format attendu : signal-psg-patient-<id_patient>-nuit-<id_nuit>.csv"
         )
 
     return chemin_complet, id_patient

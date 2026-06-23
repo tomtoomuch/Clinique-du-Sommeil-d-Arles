@@ -37,6 +37,7 @@ plt.ylabel('SPO2')
 # affiche la figure à l'écran
 plt.savefig(f"{url_graphs}evolution_saturation.png", transparent=True, dpi=300)
 plt.savefig(f"{url_graphs}evolution_saturation.pdf", dpi=300)
+plt.close()
 
 #Graphique évolution du debit nasal
 evolution_debit_nasal = plt.plot(timestamp_sec,debit_nasal_pct)
@@ -45,6 +46,7 @@ plt.xlabel('Temps secondes')
 plt.ylabel('Debit nasal en %')
 plt.savefig(f"{url_graphs}evolution_debit_nasal.png", transparent=True, dpi=300)
 plt.savefig(f"{url_graphs}evolution_debit_nasal.pdf", dpi=300)
+plt.close()
 
 #Graphique évolution des ronflements
 evolution_ronflements_db = plt.plot(timestamp_sec,ronflements_db)
@@ -53,3 +55,4 @@ plt.xlabel('Temps secondes')
 plt.ylabel('Ronflement en décibel')
 plt.savefig(f"{url_graphs}evolution_ronflements_db.png", transparent=True, dpi=300)
 plt.savefig(f"{url_graphs}evolution_ronflements_db.pdf", dpi=300)
+plt.close()

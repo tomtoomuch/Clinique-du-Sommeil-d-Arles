@@ -6,10 +6,10 @@ nuit_id = int(nuit_id)
 
 cnx = mysql.connector.connect(
     user = 'root',
-    password = '4cc3sB4s3D3D*nn33s',
+    password = 'Malbosc!2025',
     host = 'localhost',
-    database = 'clinique_sommeil',
-    port = '3308'
+    database = 'resultatsnuitsommeil',
+    port = '3306'
 )
 
 cur = cnx.cursor(dictionary=True)

@@ -70,7 +70,7 @@ def trouver_csv_depuis_id_nuit(id_nuit, dossier_raw=DOSSIER_RAW):
     --------
     (chemin_complet, id_patient)
     """
-    suffixe_recherche = f"_nuit_{id_nuit}.csv"
+    suffixe_recherche = f"-nuit-{id_nuit}.csv"
 
     fichiers_trouves = [
         f for f in os.listdir(dossier_raw)
@@ -95,7 +95,7 @@ def trouver_csv_depuis_id_nuit(id_nuit, dossier_raw=DOSSIER_RAW):
 
     # Extraction de id_patient depuis le nom : signal_psg_patient_<id>_nuit_<id>.csv
     nom_sans_extension = nom_fichier.replace(".csv", "")
-    morceaux = nom_sans_extension.split("_")
+    morceaux = nom_sans_extension.split("-")
     try:
         id_patient = int(morceaux[3])  # signal[0] psg[1] patient[2] <id>[3] nuit[4] <id>[5]
     except (IndexError, ValueError):

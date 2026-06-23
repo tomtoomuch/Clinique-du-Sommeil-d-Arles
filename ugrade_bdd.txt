@@ -100,3 +100,16 @@ VALUES (
     nb_ronflements_forts
 );
 END
+
+
+
+UTILISATEURS ET PERMISSIONS
+
+- admin_bdd : tous droits ouverts
+  sert pour les opérations de maintenance et de modofications lourdes de la BDD
+
+- medecin_validateur : a uniquement le droit de voir la vue 'nuit_etude'
+
+- médecin : a le droit d'accéder aux vues 'patients'
+
+- superviseur : a le droit d'accéder à la vue nuit_etude, de saisir un  commentaire ainsi que le nom du médecin en service et validant les résultats

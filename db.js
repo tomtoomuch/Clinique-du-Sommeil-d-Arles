@@ -1,14 +1,20 @@
-const db = require('mysql');
+const db = require('mysql2');
 const {motDePasse, bdd, port} = require('./mdp.js')
-const connex = db.createConnection({
+const connexion = db.createConnection({
     host : 'localhost',
     user : 'root',
     password : motDePasse,
     database: bdd,
     port: port
 })
-// modifier les identifiants pour acceder à la BDD
+
+connexion.connect((err) => {
+  if (err) {
+    console.error("Erreur connexion MySQL :", err.message);
+    return;
+  }
+  console.log("Connexion MySQL OK");
+});
 
 
-
-module.exports = {connex}
+module.exports = {connexion}

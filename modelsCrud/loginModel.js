@@ -1,10 +1,10 @@
 const {connexion} = require('../db.js');
 
 
-function findUserByMailAndPassword(email, password) {
+function findUserByMailAndPassword(email, pass) {
     return new Promise ((resolve,reject) => {
-        connexion.query('SELECT id_personnel, email, password FROM personnel WHERE email = ? AND password = ?;',
-            [email, password],
+        connexion.query('SELECT id_personnel, email, pass FROM personnel WHERE email = ? AND pass = ?;',
+            [email, pass],
             (err,row) => {
                 if (err){
                         console.log(err.message);

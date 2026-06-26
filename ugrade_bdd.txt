@@ -9,6 +9,44 @@ VUES a mettre dans la bdd
 
 
 
+# Vue pour l'infirmier(ère) qui doit asigner le medecin validateur 
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `nuitsommeilfase2`.`vue_infirmier_medecins_validateurs` AS
+    SELECT 
+        `nuitsommeilfase2`.`medecin`.`id_personnel` AS `id_medecin`,
+        `nuitsommeilfase2`.`personnel`.`nom` AS `nom`,
+        `nuitsommeilfase2`.`personnel`.`prenom` AS `prenom`,
+        `nuitsommeilfase2`.`medecin`.`numero_rpps` AS `numero_rpps`
+    FROM
+        (`nuitsommeilfase2`.`medecin`
+        JOIN `nuitsommeilfase2`.`personnel` ON ((`nuitsommeilfase2`.`medecin`.`id_personnel` = `nuitsommeilfase2`.`personnel`.`id_personnel`)))
+
+
+# Vue pour le medecin de prescription et consultation 
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `nuitsommeilfase2`.`vue_medecin_consultation_prescription` AS
+    SELECT 
+        `nuitsommeilfase2`.`consultation`.`id_consultation` AS `id_consultation`,
+        `nuitsommeilfase2`.`consultation`.`date_consultation` AS `date_consultation`,
+        `nuitsommeilfase2`.`consultation`.`compte_rendu` AS `compte_rendu`,
+        `nuitsommeilfase2`.`patient`.`nom` AS `nom_patient`,
+        `nuitsommeilfase2`.`patient`.`prenom` AS `prenom_patient`,
+        `nuitsommeilfase2`.`patient`.`numero_secu` AS `numero_secu_patient`,
+        `nuitsommeilfase2`.`prescription_nuit`.`id_prescription` AS `id_prescription`,
+        `nuitsommeilfase2`.`prescription_nuit`.`motif_prescription` AS `motif_prescription`,
+        `nuitsommeilfase2`.`prescription_nuit`.`urgence` AS `urgence`
+    FROM
+        ((`nuitsommeilfase2`.`consultation`
+        JOIN `nuitsommeilfase2`.`patient` ON ((`nuitsommeilfase2`.`consultation`.`id_patient` = `nuitsommeilfase2`.`patient`.`id_patient`)))
+        LEFT JOIN `nuitsommeilfase2`.`prescription_nuit` ON ((`nuitsommeilfase2`.`consultation`.`id_consultation` = `nuitsommeilfase2`.`prescription_nuit`.`id_consultation`)))
+
+
 UTILISATEURS ET PERMISSIONS
 
 - admin_bdd : tous droits ouverts

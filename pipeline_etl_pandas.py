@@ -46,7 +46,7 @@ MYSQL_CONFIG = {
 }
 
 DATALAKE_PATH = "datalake.db"
-DUREE_NUIT_MIN = 420  # 7h : durée réelle de la nuit
+#DUREE_NUIT_MIN = 420  # 7h : durée réelle de la nuit
 
 
 # ============================================================
@@ -179,10 +179,11 @@ def calculer_indicateurs_signal(df, duree_nuit_min):
 
     # Durée couverte par le CSV (ex: 3600 sec = 1h)
     duree_fenetre_sec = df["timestamp_sec"].iloc[-1] - df["timestamp_sec"].iloc[0] + pas_sec
-    duree_fenetre_min = duree_fenetre_sec / 60
+    duree_sommeil_min = duree_fenetre_sec / 60
+   
 
     # Facteur d'extrapolation : nuit complète / fenêtre CSV (ex: 7h/1h = 7)
-    facteur = duree_nuit_min / duree_fenetre_min
+    #facteur = duree_nuit_min / duree_fenetre_min
 
     # --- Statistiques SpO2 et ronflements en un seul appel .agg() ---
     # Un dict {colonne: [fonctions]} permet de calculer toutes les
@@ -211,8 +212,8 @@ def calculer_indicateurs_signal(df, duree_nuit_min):
     nb_ronflements_forts_csv = (df["ronflements_db"] > 70).sum()
 
     duree_hypoxie_min_csv = (nb_lignes_hypoxie * pas_sec) / 60
-    duree_hypoxie_min = round(duree_hypoxie_min_csv * facteur, 1)
-    nb_ronflements_forts = round(nb_ronflements_forts_csv * facteur)
+    duree_hypoxie_min = round(duree_hypoxie_min_csv , 1)
+    nb_ronflements_forts = round(nb_ronflements_forts_csv )
 
     return {
         "spo2_min": spo2_min,
@@ -223,6 +224,7 @@ def calculer_indicateurs_signal(df, duree_nuit_min):
         "position_dominante": position_dominante,
         "duree_hypoxie_min": duree_hypoxie_min,
         "nb_ronflements_forts": nb_ronflements_forts,
+        "duree_sommeil_min": duree_sommeil_min
     }
 
 
@@ -241,7 +243,7 @@ def diagnostic_depuis_iah(iah):
 # ============================================================
 # 3) LOAD : écriture en base (procédure sp_creer_resultat_nuit)
 # ============================================================
-def ecrire_resultat_nuit(id_nuit, indicateurs):
+def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs):
     """
     Appelle la procédure stockée sp_creer_resultat_nuit pour insérer
     (ou mettre à jour) le résultat de la nuit. La procédure se
@@ -261,6 +263,7 @@ def ecrire_resultat_nuit(id_nuit, indicateurs):
 
         curseur.callproc("sp_creer_resultat_nuit", [
             id_nuit,
+            id_medecin_validateur,
             indicateurs["spo2_min"],
             indicateurs["spo2_moy"],
             indicateurs["spo2_mediane"],
@@ -269,6 +272,8 @@ def ecrire_resultat_nuit(id_nuit, indicateurs):
             indicateurs["decibels_max"],
             indicateurs["decibels_moy"],
             indicateurs["nb_ronflements_forts"],
+            indicateurs["duree_sommeil_min"]
+            
         ])
 
         # Récupération du SELECT de vérification renvoyé par la procédure
@@ -347,7 +352,7 @@ def lire_resultat_nuit(id_nuit):
 def generer_courbes(df, id_nuit, dossier_sortie):
     """Génère 3 courbes PNG : SpO2, débit nasal, ronflements."""
     os.makedirs(dossier_sortie, exist_ok=True)
-
+    
     temps_min = df["timestamp_sec"] / 60
 
     def surligner_evenements(ax):
@@ -405,7 +410,6 @@ def generer_courbes(df, id_nuit, dossier_sortie):
     plt.close(fig)
 
     print(f"  Courbes générées dans {dossier_sortie}/")
-
 
 # ============================================================
 # 6) LOAD : rapport médical texte
@@ -590,7 +594,7 @@ def deplacer_csv_traite(chemin_csv_source, dossier_traite="raw/traite"):
 # ============================================================
 # ORCHESTRATION : pipeline complet
 # ============================================================
-def executer_pipeline(id_nuit):
+def executer_pipeline(id_nuit, id_medecin_validateur):
     """
     Orchestre le pipeline complet pour une nuit donnée.
     Le CSV correspondant est retrouvé automatiquement dans raw/
@@ -615,13 +619,13 @@ def executer_pipeline(id_nuit):
 
         # --- TRANSFORM ---
         print("\n[2/6] Calcul des indicateurs depuis le signal (pandas)...")
-        indicateurs = calculer_indicateurs_signal(df, DUREE_NUIT_MIN)
+        indicateurs = calculer_indicateurs_signal(df, (df["timestamp_sec"].iloc[-1])/60)
         print(f"  SpO2 min: {indicateurs['spo2_min']} | "
               f"Position dominante: {indicateurs['position_dominante']}")
 
         # --- LOAD : écriture via procédure ---
         print("\n[3/6] Écriture du résultat via sp_creer_resultat_nuit...")
-        confirmation = ecrire_resultat_nuit(id_nuit, indicateurs)
+        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs)
         print(f"  IAH calculé par la procédure : {confirmation['iah']}")
         print(f"  Diagnostic : {diagnostic_depuis_iah(float(confirmation['iah']))}")
 
@@ -657,19 +661,20 @@ def executer_pipeline(id_nuit):
 # POINT D'ENTRÉE
 # ============================================================
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage : python pipeline_etl_pandas.py <id_nuit>")
-        print("Exemple : python pipeline_etl_pandas.py 1")
+    if len(sys.argv) < 3:
+        print("Usage : python pipeline_etl_pandas.py <id_nuit> <id_medecin_validateur>")
+        print("Exemple : python pipeline_etl_pandas.py 1 2")
         sys.exit(1)
 
     try:
         id_nuit_arg = int(sys.argv[1])
+        id_medecin_validateur_arg = int(sys.argv[2])
     except ValueError:
-        print("Erreur : id_nuit doit être un nombre entier.", file=sys.stderr)
+        print("Erreur : id_nuit et id_medecin_validateur doivent être des nombres entiers.", file=sys.stderr)
         sys.exit(1)
 
     try:
-        executer_pipeline(id_nuit_arg)
+        executer_pipeline(id_nuit_arg, id_medecin_validateur_arg)
     except Exception as erreur:
         print(f"Erreur fatale : {erreur}", file=sys.stderr)
         sys.exit(1)

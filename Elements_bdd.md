@@ -1,27 +1,26 @@
 # UTILISATEURS ET PERMISSIONS
 
-1. admin_bdd 
-   - tous droits ouverts sert pour les opérations de maintenance et de modofications lourdes de la BDD
+1. **admin_bdd**
+   - tous droits ouverts sert pour les opérations de maintenance et d'administration de la BDD
 
-2. infirmier(ière)
-   - peut accéder à la table **suivi_patient** *(SELECT, CREATE)*, avec un trigger pour bloquer l'accès au ID.
+2. **infirmier(ière)**
+   - peut accéder à la table **suivi_patient** _(SELECT, CREATE)_, avec un trigger pour bloquer l'accès au ID.
    - à la vue **nuit_disponible**
 
-3. médecin
-   - a le droit d'accéder à la table **patients** *(SELECT, UPDATE)*
-   - à la table **suivi_patient** *(SELECT, UPDATE)*
-   -  ainsi cas la vue **historique_patient**.
+3. **médecin**
+   - a le droit d'accéder à la table **patients** _(SELECT, UPDATE)_
+   - à la table **suivi_patient** _(SELECT, UPDATE)_
+   - ainsi qu'à la vue **historique_patient**.
 
-4. superviseur (infirmier(ère))
+4. **superviseur (infirmier(ère))**
    - a le droit d'accéder à la vue **vue_infirmier_medecins_validateurs** 
    - et d'accéder à la table **résultats_nuit** *(SELECT, UPDATE)* -> saisir un  commentaire ainsi que le nom du médecin en service et validant les résultats.
-
 
 
 # LES VUES
 
 ## Historique_patient
-Cette vue a été crée pour permettre au **médecin** de voir rapidement le suivit qu'à eu le patient dans la clinique.
+Cette vue a été crée pour permettre au **médecin** de voir rapidement le suivi médical du patient au sein de la clinique.
 
 ```bash
 SELECT
@@ -47,7 +46,8 @@ LEFT JOIN suivi_patient
 ```
 
 ## Vue nuit_disponible
- On crée une vue pour **l'infirmier(ère)** puisse voir les nuits d'études qui ne sont pas rentrer dans résultats_nuit, pour pouvoir rentrer les résultats dans la table résultats_nuit par la suite.
+ On crée une vue pour que l'**infirmier(ère)** puisse voir les nuits d'études dont les données ne sont encore intégrées à la table **résultat_nuit**, pour pouvoir rentrer les résultats dans la table résultats_nuit par la suite.
+
 ```bash
   CREATE VIEW `nuit_disponible` AS
   SELECT nuit_etude.id_nuit
@@ -99,11 +99,10 @@ VIEW `nuitsommeilfase2`.`vue_medecin_consultation_prescription` AS
         LEFT JOIN `nuitsommeilfase2`.`prescription_nuit` ON ((`nuitsommeilfase2`.`consultation`.`id_consultation` = `nuitsommeilfase2`.`prescription_nuit`.`id_consultation`)))
 ```
 
-
-# PROCEDURES
+# PROCEDURES STOCKEES
 ## Procedure pour inscrire les données dans la table résultat nuit.
 
-Cette procédure a été modifié pour recevoir **l'ID du medecin validateur**.
+Cette procédure a été modifié pour recevoir **l'ID du médecin validateur**.
 
 ```bash
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_creer_resultat_nuit`(
@@ -135,7 +134,7 @@ BEGIN
         ELSE 'mixte'
     END;
 
-    -- Recupa©ration complaite depuis evenement_respiratoire
+    -- Récupération complète depuis evenement_respiratoire
 SELECT
     COUNT(CASE WHEN type_evenement LIKE '%apnee%' THEN 1 END),
     COUNT(CASE WHEN type_evenement = 'hypopnee' THEN 1 END),
@@ -201,9 +200,9 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
            ROUND((v_nb_apnees + v_nb_hypopnees) /(p_duree_sommeil_min/60), 2) AS iah;
 END
 ```
-## Procedure pour le médecin ou infirmier(ère)
 
-Cette procédure a été créée pour permettre par la recherche du suivi du patient par son du nom.
+## Procedure pour le médecin ou infirmier(ère)
+Cette procédure a été créée pour permettre la recherche du suivi du patient par son nom.
 
 ```bash
 CREATE DEFINER=`root`@`localhost`

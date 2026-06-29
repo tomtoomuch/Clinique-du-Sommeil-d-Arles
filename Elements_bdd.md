@@ -1,20 +1,20 @@
 # UTILISATEURS ET PERMISSIONS
 
 1. **admin_bdd**
-   - tous droits ouverts sert pour les opérations de maintenance et d'administration de la BDD
+   - tous droits ouverts sert pour les opérations de maintenance et d'administration de la BDD.
 
 2. **infirmier(ière)**
-   - peut accéder à la table **suivi_patient** _(SELECT, CREATE)_, avec un trigger pour bloquer l'accès au ID.
-   - à la vue **nuit_disponible**
+   - peut accéder à la table **suivi_patient** _(SELECT, CREATE)_, ses permissions lui permettent d'alimenter la table **suivi_patient** sans avoir le droit de modification sur les clés primaires,
+   - peut accéder à la vue **nuit_disponible**
 
 3. **médecin**
-   - a le droit d'accéder à la table **patients** _(SELECT, UPDATE)_
-   - à la table **suivi_patient** _(SELECT, UPDATE)_
+   - peut accéder à la table **patients** _(SELECT, UPDATE)_,
+   - peut accéder à la table **suivi_patient** _(SELECT, UPDATE)_,
    - ainsi qu'à la vue **historique_patient**.
 
 4. **superviseur (infirmier(ère))**
-   - a le droit d'accéder à la vue **vue_infirmier_medecins_validateurs** 
-   - et d'accéder à la table **résultats_nuit** *(SELECT, UPDATE)* -> saisir un  commentaire ainsi que le nom du médecin en service et validant les résultats.
+   - peut accéder à la vue **vue_infirmier_medecins_validateurs** 
+   - peut accéder à la table **résultats_nuit** _(SELECT, UPDATE)_. L'infirmier(ère) superviseur(euse) peut saisir un  commentaire. Il choisit également le nom du médecin en service afin de l'assigner aux résultats en tant que médecin validateur.
 
 
 # LES VUES
@@ -46,7 +46,7 @@ LEFT JOIN suivi_patient
 ```
 
 ## Vue nuit_disponible
- On crée une vue pour que l'**infirmier(ère)** puisse voir les nuits d'études dont les données ne sont encore intégrées à la table **résultat_nuit**, pour pouvoir rentrer les résultats dans la table résultats_nuit par la suite.
+ On crée une vue pour que l'**infirmier(ère)** puisse voir les nuits d'études dont les données ne sont encore intégrées à la table **résultat_nuit**. Le fait qu'une nuit soit disponible lui permet par la suite, de générer la table **resultat_nuit**.
 
 ```bash
   CREATE VIEW `nuit_disponible` AS

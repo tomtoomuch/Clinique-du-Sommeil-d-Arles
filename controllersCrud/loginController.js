@@ -11,7 +11,13 @@ connexionUtilisateur = async (req, res) => {
     }
     return res.status(200).json({
         success: true,
-        message: "Connexion validée"
+        message: "Connexion validée",
+        email: userFound.email,
+        prenom: userFound.prenom,
+        nom:userFound.nom,
+        telephone:userFound.telephone,
+        id: userFound.id_personnel,
+        date_embauche: userFound.date_embauche
     })
 }
 

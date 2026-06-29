@@ -1,8 +1,8 @@
 const { findUserByMailAndPassword } = require('../modelsCrud/loginModel');
 
 connexionUtilisateur = async (req, res) => {
-    const { email, pass } = req.body
-    const userFound = await findUserByMailAndPassword(email, pass);
+    const { email, password } = req.body
+    const userFound = await findUserByMailAndPassword(email, password);
     if (!userFound) {
         return res.status(404).json({
             success: false,

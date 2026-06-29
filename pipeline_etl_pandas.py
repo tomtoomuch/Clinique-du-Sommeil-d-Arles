@@ -370,7 +370,7 @@ def generer_courbes(df, id_nuit, dossier_sortie):
             ax.axvspan(debut, temps_min.iloc[-1], color="red", alpha=0.15)
 
     # SpO2
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(100, 4))
     ax.plot(temps_min, df["spo2"], color="steelblue", linewidth=1)
     ax.axhline(90, color="orange", linestyle="--", linewidth=1, label="Seuil hypoxie 90%")
     surligner_evenements(ax)
@@ -384,7 +384,7 @@ def generer_courbes(df, id_nuit, dossier_sortie):
     plt.close(fig)
 
     # Débit nasal
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(100, 4))
     ax.plot(temps_min, df["debit_nasal_pct"], color="seagreen", linewidth=1)
     surligner_evenements(ax)
     ax.set_xlabel("Temps (minutes)")
@@ -396,7 +396,7 @@ def generer_courbes(df, id_nuit, dossier_sortie):
     plt.close(fig)
 
     # Ronflements
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(100, 4))
     ax.plot(temps_min, df["ronflements_db"], color="indianred", linewidth=1)
     ax.axhline(70, color="orange", linestyle="--", linewidth=1, label="Seuil ronflement fort 70dB")
     surligner_evenements(ax)

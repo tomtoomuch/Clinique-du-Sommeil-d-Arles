@@ -1,17 +1,10 @@
 const express = require("express"); 
 const app = express();
 app.use(express.json());
-<<<<<<< HEAD
-const cors = require('cors');
-app.use(cors({
-    origin: "http://localhost:4200"
-}));
-=======
-const cors =require ('cors');
+const cors = require ('cors');
 app.use (cors({
-    orgin : "http://localhost:4200"
+    origin : "http://localhost:4200"
 }))
->>>>>>> dev
 
 const loginRoute = require('./routersCrud/loginRouter');
 const medecinRoute = require('./routersCrud/medecinRouter');

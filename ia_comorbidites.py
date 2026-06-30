@@ -33,8 +33,10 @@ from sklearn.pipeline import Pipeline
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "root",
-    "database": "cliniquev3"
+    "password": "Malbosc!2025",
+    "database": "nuitsommeil2",
+    "port" : "3306",
+    "use_pure": True
 }
 
 SQLITE_PATH = Path("base_analytique.db")

@@ -1,10 +1,17 @@
 const express = require("express"); 
 const app = express();
 app.use(express.json());
+<<<<<<< HEAD
 const cors = require('cors');
 app.use(cors({
     origin: "http://localhost:4200"
 }));
+=======
+const cors =require ('cors');
+app.use (cors({
+    orgin : "http://localhost:4200"
+}))
+>>>>>>> dev
 
 const loginRoute = require('./routersCrud/loginRouter');
 const medecinRoute = require('./routersCrud/medecinRouter');
@@ -14,6 +21,12 @@ app.use("/api/users/", loginRoute);
 app.use("/api/medecin/", medecinRoute);
 app.use("/api/techicien/", technicienRoute);
 
+
+   
+
+
+
+// app.post('/login', loginRouteconnexionUtilisateur);
 
 app.listen(3000, () => {
     console.log("Serveur démarré sur le port 3000");

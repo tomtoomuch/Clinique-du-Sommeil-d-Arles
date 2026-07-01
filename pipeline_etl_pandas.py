@@ -26,21 +26,21 @@ import os
 import sys
 import shutil
 import sqlite3
-
+import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector import Error as MySQLError
-from mdp import motdepasse, bdd, port
+from mdp import motDePasse, bdd, port
 
-
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 # ============================================================
 # CONFIGURATION
 # ============================================================
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": motdepasse,
+    "password": motDePasse,
     "database": bdd,
     "port": port
 }
@@ -646,12 +646,12 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
         alimenter_curated_nuit(id_nuit, resultat)
         deplacer_csv_traite(chemin_csv)
 
-        print(f"\n✓ Pipeline terminé : Patient #{id_patient} / Nuit #{id_nuit}\n")
+        print(f"\n Pipeline terminé : Patient #{id_patient} / Nuit #{id_nuit}\n")
         return resultat
 
     except Exception as erreur:
         print(
-            f"\n✗ ERREUR dans le pipeline pour id_nuit={id_nuit} : {erreur}",
+            f"\n ERREUR dans le pipeline pour id_nuit={id_nuit} : {erreur}",
             file=sys.stderr
         )
         raise

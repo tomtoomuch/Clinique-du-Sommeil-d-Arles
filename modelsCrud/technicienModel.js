@@ -1,9 +1,9 @@
-const {connex} = require('../db.js');
-const db = connex;
+const {connexion} = require('../db.js');
+
 
 function vueTechniecienCpap(){
     return new Promise ((resolve,reject) => { 
-        db.query('SELECT * from vuetechnieciencpap;', (err,rows) => {
+        connexion.query('SELECT * from vuetechnieciencpap;', (err,rows) => {
                 if (err){
                         console.log(err.message);
                         return reject(err);
@@ -18,7 +18,7 @@ function vueTechniecienCpap(){
 
 function vueTechniecienPsg(){
     return new Promise ((resolve,reject) => { 
-        db.query('SELECT * from vuetechnicienpsg;', (err,rows) => {
+        connexion.query('SELECT * from vuetechnicienpsg;', (err,rows) => {
                 if (err){
                         console.log(err.message);
                         return reject(err);
@@ -30,5 +30,20 @@ function vueTechniecienPsg(){
     })
 }
 
-
-module.exports = {vueTechniecienCpap, vueTechniecienPsg}
+function findNuitDispo() {
+    return new Promise ((resolve,reject) => {
+        connexion.query("SELECT * FROM nuit_disponible;",
+            
+            (err,row) => {
+                if (err){
+                        console.log(err.message);
+                        return reject(err, null);
+                }
+                if (row){
+                    resolve(row);
+                    
+                }
+            });
+    });
+};
+module.exports = {vueTechniecienCpap, vueTechniecienPsg, findNuitDispo}

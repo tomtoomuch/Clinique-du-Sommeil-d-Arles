@@ -1,4 +1,5 @@
 const { findUserByMailAndPassword } = require('../modelsCrud/loginModel');
+const { findUserJob } = require('../modelsCrud/loginModel');
 
 connexionUtilisateur = async (req, res) => {
     const { email, password } = req.body
@@ -21,4 +22,23 @@ connexionUtilisateur = async (req, res) => {
     })
 }
 
-module.exports = { connexionUtilisateur }; 
+findJob = async (req, res) => {
+    const { id_personnel } = req.query;
+
+    const jobFound = await findUserJob(Number(id_personnel));
+
+    if (!jobFound) {
+        return res.status(404).json({
+            success: false,
+            message: "Pas de personnel..."
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Personnel trouvé",
+        job: jobFound
+    });
+}
+
+module.exports = { connexionUtilisateur,findJob }; 

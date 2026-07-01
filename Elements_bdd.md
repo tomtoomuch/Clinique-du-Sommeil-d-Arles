@@ -23,6 +23,7 @@
 Cette vue a été crée pour permettre au **médecin** de voir rapidement le suivi médical du patient au sein de la clinique.
 
 ```bash
+CREATE VIEW `historique_patient` AS
 SELECT
     patient.nom,
     patient.prenom,

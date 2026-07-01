@@ -8,7 +8,7 @@ Patient          : Bernard Tessier
 Nuit d'étude      : #1
 Date              : 2024-10-08
 Type d'examen     : polysomnographie
-Médecin validateur: Dr Isabelle Faure
+Médecin validateur: Dr Thomas Estri
 
 ------------------------------------------------------------
   RÉSUMÉ DE LA NUIT
@@ -54,5 +54,5 @@ Commentaire médical :
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
-  Validé le 2026-06-26 par Dr Faure.
+  Validé le 2026-07-01 par Dr Estri.
 ============================================================

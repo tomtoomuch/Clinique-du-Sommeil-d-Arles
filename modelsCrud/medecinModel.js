@@ -1,9 +1,10 @@
-const {connex} = require('../db.js');
-const db = connex;
+const {connexion} = require('../db.js');
+
 
 function getMedecin(){
     return new Promise ((resolve,reject) => { 
-        db.query('SELECT * from medecin;', (err,rows) => {
+        connexion.query('SELECT * from medecin LEFT JOIN personnel ON medecin.id_personnel = personnel.id_personnel;', 
+            (err,rows) => {
                 if (err){
                         console.log(err.message);
                         return reject(err);

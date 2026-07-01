@@ -1,22 +1,33 @@
 # Clinique-du-Sommeil-d-Arles-Pipeline-ETL-sur-nuit-d-tude
-# Le projet
+## Le projet
 La Clinique du sommeil d'Arles, travaille sur les maladies du sommeil.
 Dans ce cadre ils vont passer par une étape de diagnostic du patient et dans un second temps le suivre pendant le traitement.
 Lors de la nuit d'étude qui sert au diagnostic ils disposent de deux sources de données pour une nuit d’étude :
 
-CSV capteur (signal brut sur 1h, 1 ligne / 10 secondes)
-La table SQL evenement_respiratoire (événements respiratoires déjà détectés et validés sur 2h).
+- CSV capteur 
+- et base de donnée SQL
+
 
 Ils ont besoins de regrouper les données pour pouvoir permettre au médecin d'avoir une vue d'ensemble pour faire le diagnostic.
 
-# L'objectif
-- Lire le CSV capteur
+Par la suite un infirmier superviseur rentre un commentaire sur les résultats de la nuit via une application.
+
+Enfin le médecin validateur récupère les résultats du patient et les valides via une application.
+
+Toutes les données récupérées et traitées sont utiliser dans une base analytique pour entrainer une IA afin de faciliter les futurs diagnostiques. 
+
+## Les objectifs
+- Lire les CSV 
 - Calculer les indicateurs cliniques
 - Remplir la table resultatnuit avec les indicateurs cliniques du csv et de la table evenementrespiratoire
 - Envoiyer le CSV dans le datalake pour usage futur (modèle en étoile faits_nuits)
 - Produire un rapport médical avec diagnostic et courbes que le médecin pourra charger plus tard.
+- Créer une interface pour l'opérateur (infirmier superviseur)
+- Créer une interface pour le médecin validateur
+- Alimenter une base de donnée analytique
+- Entrainer une IA pour faciliter les futurs diagnostiques
 
-# L'installation
+## L'installation
 
 Création d'un environnement Git
 ```bash
@@ -80,7 +91,7 @@ Installer seaborn:
 pip install seaborn
 ```
 
-# Extraction et transformation des CSV
+## Extraction et transformation des CSV
 
 Lire le CSV capteur depuis un répertoire raw/
 
@@ -114,9 +125,9 @@ nbrera = COUNT(typeevenement = 'RERA')
 
 Nombre total d’événements
 ```
-Extrapolation sur la nuit complète
-```bash
+Extrapolation sur la nuit complète :
 Les données couvrent 1h de CSV et 2h d’événements, la nuit dure 7h.
+```bash
 Durée de sommeil : dureesommeilmin ≈ 7h × 60 = 420 min (ou valeur fournie dans les notes techniques)
 ```
 Une fois les calculs réalisés
@@ -131,34 +142,107 @@ Les fichiers crées pour réaliser ces étapes sont :
 - transformation_CSV.py
 ```
 
-# Traitement et alimentation de la bdd
+## Traitement et alimentation de la bdd
 
 Dans la bdd (avec MySQL Worbench), il faudra remplir la table resultat_nuit avec les informations présente d'une part dans la bdd et d'autre part avec les données des csv. Pour se faire on va :
 
-Création d'une procedure dans SQL pour alimenter la table résultat nuit de la bdd
+### Créer deux fichiers qui ne seront pas suivit dans le git pour protéger les accès à la bdd :
+mdp.py
 ```bash
-Création de la procédure 'insert_data_resultat'
+motdepasse = "votremotdepasse"
+bdd = "votrenomdebdd"
+port = numéro de port que vous utilisez
+export =(motdepasse,bdd,port)
 ```
-Dans un second temps il faudra appeler cette procedure dans python pour pouvoir y intégrer les données récupérées en CSV.
+mdp.js
 ```bash
-Utilisation de MySQL connector et appel de la procedure et des données CSV à y intégrer.
-Pour permettre une meilleure sécurisation des mots de passes. Nous avons créer des variables génériques et nos mots de passes individuel dans des fichiers non suivit par Git.
+const = motDePasse = "votremotdepasse"
+const = bdd = "votrenomdebdd"
+const = port = numéro de port que vous utilisez
+module.exports = {motDePasse, bdd, port}
+```
+Créer un lien entre MySQL et nos fichiers Python ou JS qui ont besoin d'être connecté :
+```bash
+MYSQL_CONFIG = {
+    "host": "localhost",
+    "user": "root",
+    "password": motdepasse,
+    "database": bdd,
+    "port": port,
+}
+```
+### Une fois que les fichiers sont connecté, mettre à jour la bdd.
+
+Consulter le fichier **Elements_bdd**. Inserer dans votre bdd toutes les procédures et vu qui sont dans ce fichier.
+
+Dans un second temps il faudra appeler la procedure ci-dessous dans python pour pouvoir y intégrer les données récupérées en CSV, et alimenter la table **resultat_nuit** dans la bdd.
+```bash
+sp_creer_resultat_nuit
 ```
 Les fichiers crées pour réaliser ces étapes sont :
 ```bash
-- procedure_insertion.py
-- ugrade_bdd.txt (Où se trouve la procédure à intégerer à la bdd vu que celle-ci n'est pas suivit par Git)
+- pipeline_etl_pandas.py
+- Elements_bdd.db (car la bdd n'est pas suivit par Git)
 ```
-# Générer un rapport pour le médecin
+## Générer un rapport pour le médecin
 
-L'objectif est ici que le médecin puisse consulter tous les résultats de la nuit d'étude du patient traités et non pas brut. Afin de pouvoir prescrirpar la suite un traitement adapté au patient.
+Utilisation d'un Pipeline **app_resultats_nuit_avec_ia**, pour permettre au médecin validateur de récupérer les résultats nuits d'un patient, de faire un commentaire et le valider.
 
-# Création d'un datalake pour entrainer une IA
+Création d'un espace sur le front pour le commentaire du médecin : 
+```bash
+st.text("Commentaire validation médical")
+            commentaire= st.text_area("")
+```
+Création d'un **dossier patient** dans lequel sera rangé les résultats des patients:
+```bash
+folder = Path("patient")
+        folder.mkdir(exist_ok=True)
+```
+Création du bouton **valider**, qui est conditionné au remplissage du commentaire du médecin
+```bash
+st.header('Valider le rapport')
+button1 = st.button('Valider')
+
+if button1: 
+    if commentaire != "":
+        pdf = FPDF('P', 'mm', 'A4')
+    else:  
+        st.warning("Renseigner commentaire")
+```
+Création du PDF **"rapport_valide_patient{ID}"**, dans lequel sera combiné le rapport.txt, les graphs et le commentaire du médecin validateur:
+```bash
+    #première page : rapport de la nuit
+        pdf.add_page()
+        pdf.set_font(family='Times', size=12)
+        pdf.set_font("helvetica", size=14)
+        pdf.multi_cell(0, 8, texte)
+        pdf.cell(40, 10, "COMMENTAIRE VALIDATION MEDICAL", ln=True)
+        pdf.multi_cell(0, 8, commentaire)
+    #seconde page : graph SPO2
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "spo2.png"), x=10, y=20, w=180)
+    #troisième page : graph debit_nasal
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "debit_nasal.png"), x=10, y=20, w=180)
+    #quatrième page : graph ronflement
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "ronflements.png"), x=10, y=20, w=180)
+```
+Création du bouton **télécharger**, qui permet au médecin de télécharger le pdf.
+```bash
+st.download_button(
+        "Télécharger PDF",
+        data=pdf_bytes,
+        file_name = f"rapport_valide_patient_{selected_patient_id}.pdf", 
+        mime="application/pdf"
+        )
+```
+## Création d'un datalake pour entrainer une IA
 
 Pour créer le datalake :
 Création du fichier database.py
 
 
-# Création d'une route API pour permettre des connexions sécuriser avec des accés spécifique à la Bdd.
+## Création d'une route API pour permettre des connexions sécuriser avec des accés spécifique à la Bdd.
 
 

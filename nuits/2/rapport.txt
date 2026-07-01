@@ -8,14 +8,14 @@ Patient          : Isabelle Vernet
 Nuit d'étude      : #2
 Date              : 2024-11-05
 Type d'examen     : polygraphie
-Médecin validateur: Dr Isabelle Faure
+Médecin validateur: Dr Thomas Estri
 
 ------------------------------------------------------------
   RÉSUMÉ DE LA NUIT
 ------------------------------------------------------------
 
-Index Apnée-Hypopnée (IAH)      : 7.86 événements/heure
-Sévérité (calculée par la base)  : léger
+Index Apnée-Hypopnée (IAH)      : 27.57 événements/heure
+Sévérité (calculée par la base)  : modéré
 
 SpO2 minimale                    : 87.80 %
 SpO2 moyenne                     : 96.80 %
@@ -23,14 +23,14 @@ SpO2 médiane                     : 97.00 %
 Durée totale d'hypoxie           : 3 minutes
 
 Nombre d'apnées                  : 0
-Nombre d'hypopnées               : 55
-Nombre de RERA                   : 8
-Nombre de micro-éveils estimé    : 63
+Nombre d'hypopnées               : 193
+Nombre de RERA                   : 28
+Nombre de micro-éveils estimé    : 221
 
 Durée apnée moyenne              : 19 secondes
 Durée apnée maximale             : 25 secondes
 
-Position dominante                : laterale
+Position dominante                : latérale
 Intensité ronflements (max)       : 60.90 dB
 Intensité ronflements (moy)       : 38.90 dB
 Ronflements forts (>70dB)         : 0
@@ -39,7 +39,7 @@ Ronflements forts (>70dB)         : 0
   DIAGNOSTIC
 ------------------------------------------------------------
 
-SAHOS léger
+SAHOS modéré
 
 Commentaire médical :
 (aucun commentaire renseigné)
@@ -54,5 +54,5 @@ Commentaire médical :
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
-  Validé le 2026-06-26 par Dr Faure.
+  Validé le 2026-07-01 par Dr Estri.
 ============================================================

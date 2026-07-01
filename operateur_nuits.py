@@ -35,14 +35,14 @@ menu_options_select_nuit = []
 
 for nuit in nuits_disponibles:
     menu_options_select_nuit.append(f"Nuit {nuit['id_nuit']}")    
+    print(nuit["id_nuit"])
 
 nuit_selectionnee = st.selectbox(
     "Sélectionner une nuit à ajouter à la base de données et produire le rapport médical pour le médecin",
     (menu_options_select_nuit)   
 )
-#print(nuit_selectionnee)
-nuit_selectionnee = nuit_selectionnee.split(" ")
-id_nuit = nuit_selectionnee[1]
+
+id_nuit = nuit_selectionnee.split(" ").pop(-1)
 
 st.header("Médecin validateur")
 curseur = connexion.cursor(dictionary=True)
@@ -61,9 +61,9 @@ medecin_validateur = st.selectbox(
 #print(medecin_validateur)
 medecin_validateur = medecin_validateur.split(" ").pop(-1)
 
-
 st.header("Commentaire à ajouter dans les résultats de la nuit")
-commentaire_superviseur = st.text_area(label="Commentaire du superviseur", value="")
+commentaire_medical = st.text_area(label="Commentaire du superviseur")
+
 
 if st.button(label="Lancer l'ETL"):
     #print(nuit_selectionnee)

@@ -32,8 +32,7 @@ import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector import Error as MySQLError
 from mdp import motdepasse, bdd, port
-from operateur_nuits import id_nuit, medecin_validateur, commentaire_superviseur
-
+from operateur_nuits import commentaire_medical
 
 # ============================================================
 # CONFIGURATION
@@ -244,7 +243,7 @@ def diagnostic_depuis_iah(iah):
 # ============================================================
 # 3) LOAD : écriture en base (procédure sp_creer_resultat_nuit)
 # ============================================================
-def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs):
+def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical):
     """
     Appelle la procédure stockée sp_creer_resultat_nuit pour insérer
     (ou mettre à jour) le résultat de la nuit. La procédure se
@@ -273,7 +272,8 @@ def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs):
             indicateurs["decibels_max"],
             indicateurs["decibels_moy"],
             indicateurs["nb_ronflements_forts"],
-            indicateurs["duree_sommeil_min"]
+            indicateurs["duree_sommeil_min"],
+            commentaire_medical
             
         ])
 
@@ -626,7 +626,7 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
 
         # --- LOAD : écriture via procédure ---
         print("\n[3/6] Écriture du résultat via sp_creer_resultat_nuit...")
-        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs)
+        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical)
         print(f"  IAH calculé par la procédure : {confirmation['iah']}")
         print(f"  Diagnostic : {diagnostic_depuis_iah(float(confirmation['iah']))}")
 

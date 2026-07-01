@@ -132,7 +132,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_creer_resultat_nuit`(
     IN p_decibels_max DECIMAL(5,2),
     IN p_decibels_moy DECIMAL(5,2),
     IN p_nb_ronflements_forts INT,
-    IN p_duree_sommeil_min INT
+    IN p_duree_sommeil_min INT,
+    IN p_commentaire_medical TEXT
 )
 BEGIN
     DECLARE v_nb_apnees INT DEFAULT 0;
@@ -176,7 +177,7 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         decibels_max, decibels_moy, nb_ronflements_forts,
         nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,
         duree_apnee_moy_sec, duree_apnee_max_sec,
-        iah, duree_sommeil_min
+        iah, duree_sommeil_min, commentaire_medical
     )
     VALUES (
         p_id_nuit,
@@ -188,7 +189,7 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         v_nb_apnees, v_nb_hypopnees, v_nb_rera, v_nb_microeveils,
         v_duree_apnee_moy, v_duree_apnee_max,
         ROUND((v_nb_apnees + v_nb_hypopnees)/(p_duree_sommeil_min/60), 2),   -- 
-        p_duree_sommeil_min
+        p_duree_sommeil_min, p_commentaire_medical
     )
     ON DUPLICATE KEY UPDATE
         spo2_min = VALUES(spo2_min),

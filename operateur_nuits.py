@@ -4,9 +4,6 @@ import numpy as np
 
 import os
 import sys
-import subprocess
-import shutil
-import sqlite3
 import mysql.connector
 from mysql.connector import Error as MySQLError
 from datetime import date
@@ -33,17 +30,17 @@ curseur.execute("SELECT * FROM nuit_disponible;")
 nuits_disponibles = curseur.fetchall()
 curseur.close()
 menu_options_select_nuit = []
-if nuits_disponibles:
+if nuits_disponibles != {}:
     for nuit in nuits_disponibles:
         menu_options_select_nuit.append(f"Nuit {nuit['id_nuit']}")
 
 nuit_selectionnee = st.selectbox(
     "Sélectionner une nuit à ajouter à la base de données et produire le rapport médical pour le médecin",
-    (menu_options_select_nuit)   
-)
+    (menu_options_select_nuit)
+    )
 try:
-    nuit_selectionnee
-    id_nuit = nuit_selectionnee.split(" ").pop(-1)
+    if nuit_selectionnee != None:
+        id_nuit = nuit_selectionnee.split(" ").pop(-1)
 except NameError:
     print('Aucune nuit disponible')
 

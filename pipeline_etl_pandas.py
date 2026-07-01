@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector import Error as MySQLError
 from mdp import motdepasse, bdd, port
-from operateur_nuits import nuit_selectionnee, medecin_validateur, commentaire_superviseur
+from operateur_nuits import id_nuit, medecin_validateur, commentaire_superviseur
 
 
 # ============================================================

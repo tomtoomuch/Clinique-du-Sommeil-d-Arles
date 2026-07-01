@@ -1,16 +1,9 @@
 clinique2nuitsv2.sql
 node_modules/
 __pycache__/
-<<<<<<< HEAD
-mdp.py
-mdp.js
-datalake.db
-raw/**
-nuits/**
-=======
 mdp.py 
 mdp.js
 datalake.db
+base_analytique.db
 raw/**
 nuits/**
->>>>>>> dev

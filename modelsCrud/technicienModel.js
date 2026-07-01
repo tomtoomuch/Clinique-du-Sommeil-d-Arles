@@ -1,5 +1,5 @@
-const {connex} = require('../db.js');
-const db = connex;
+const {connexion} = require('../db.js');
+const db = connexion;
 
 function vueTechniecienCpap(){
     return new Promise ((resolve,reject) => { 

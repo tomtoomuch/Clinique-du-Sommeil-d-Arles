@@ -42,7 +42,8 @@ MYSQL_CONFIG = {
     "user": "root",
     "password": motdepasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    "use_pure": True
 }
 
 DATALAKE_PATH = "datalake.db"
@@ -426,8 +427,9 @@ def generer_rapport_texte(resultat, dossier_sortie):
     diagnostic = diagnostic_depuis_iah(iah)
 
     contenu = f"""
+
 ============================================================
-  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE
+  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE  
   Clinique du Sommeil d'Arles
 ============================================================
 

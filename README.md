@@ -55,6 +55,31 @@ Il vous faut ensuite installer Express pour permettre la création d'API via JS 
 npm install express
 ```
 
+Installer Streamlit :
+```bash 
+pip install streamlit 
+```
+
+Installer Joblib:
+```bash 
+pip install joblib
+```
+
+Installer Sklearn:
+```bash 
+pip install -U scikit-learn
+```
+
+Installer PDF:
+```bash 
+pip install fpdf
+```
+
+Installer seaborn:
+```bash 
+pip install seaborn
+```
+
 # Extraction et transformation des CSV
 
 Lire le CSV capteur depuis un répertoire raw/
@@ -135,3 +160,5 @@ Création du fichier database.py
 
 
 # Création d'une route API pour permettre des connexions sécuriser avec des accés spécifique à la Bdd.
+
+

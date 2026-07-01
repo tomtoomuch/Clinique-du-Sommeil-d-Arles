@@ -128,7 +128,7 @@ if not df_liste.empty:
 
             st.markdown("---")
 
-            # =============================================================
+              # =============================================================
             # SECTIONS EXISTANTES
             # =============================================================
             rapport_path = NUITS_DIR / str(selected_id) / "rapport.txt"
@@ -142,7 +142,10 @@ if not df_liste.empty:
             else:
                 st.warning(f"Rapport non trouvé pour la nuit {selected_id}")
 
+            with open(rapport_path, "r", encoding="utf-8") as f:
+                texte = f.read()
             st.subheader(" Courbes de la nuit")
+            
             nuit_dir = NUITS_DIR / str(selected_id)
             col1, col2, col3 = st.columns(3)
             for col, img, title in zip([col1,col2,col3],
@@ -160,6 +163,7 @@ else:
     st.warning("Aucune nuit trouvée dans la base.")
 
 st.sidebar.caption(f"Actualisé : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
 
 st.header('Valider le rapport')
 button1 = st.button('Valider')
@@ -201,3 +205,5 @@ if button1:
 
     else:  
         st.warning("Renseigner commentaire")
+
+

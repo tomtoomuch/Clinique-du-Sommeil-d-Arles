@@ -74,6 +74,22 @@ VIEW `nuitsommeilfase2`.`vue_infirmier_medecins_validateurs` AS
         (`nuitsommeilfase2`.`medecin`
         JOIN `nuitsommeilfase2`.`personnel` ON ((`nuitsommeilfase2`.`medecin`.`id_personnel` = `nuitsommeilfase2`.`personnel`.`id_personnel`)))
 ```
+**Même vue mais pas conditionné sur une base de données spécifique**
+```bash
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `medecinvalidateur` AS
+    SELECT 
+        `medecin`.`id_personnel` AS `id_personnel`,
+        `medecin`.`specialite` AS `specialite`,
+        `personnel`.`nom` AS `nom`,
+        `personnel`.`prenom` AS `prenom`
+    FROM
+        (`medecin`
+        LEFT JOIN `personnel` ON ((`medecin`.`id_personnel` = `personnel`.`id_personnel`)))
+```
 
 ## Vue pour le medecin de prescription et consultation 
 Cette vue permet au **médecin** d'avoir l'historique des consultations ainsi que les prescriptions, ce qui peut lui être utile pour le suivi du patient. 

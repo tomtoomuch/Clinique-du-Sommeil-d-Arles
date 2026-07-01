@@ -25,6 +25,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from mdp import motdepasse, bdd, port
 
 # =============================================================================
 # CONFIGURATION
@@ -33,8 +34,9 @@ from sklearn.pipeline import Pipeline
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "root",
-    "database": "cliniquev3"
+    "password": motdepasse,
+    "database": bdd,
+    "port": port
 }
 
 SQLITE_PATH = Path("base_analytique.db")

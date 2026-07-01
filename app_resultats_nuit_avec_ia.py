@@ -7,6 +7,8 @@ import pandas as pd
 from pathlib import Path
 import mysql.connector
 from datetime import datetime
+from fpdf import FPDF
+from mdp import motdepasse, bdd, port
 
 # Import du module IA
 from ia_comorbidites import get_comorbidite_probable, afficher_prediction_comorbidites
@@ -19,8 +21,9 @@ st.markdown("**Clinique du Sommeil d'Arles**")
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "root",
-    "database": "cliniquev3"
+    "password": motdepasse,
+    "database": bdd,
+    "port": port
 }
 
 NUITS_DIR = Path("nuits")
@@ -129,9 +132,13 @@ if not df_liste.empty:
             # SECTIONS EXISTANTES
             # =============================================================
             rapport_path = NUITS_DIR / str(selected_id) / "rapport.txt"
+            with open(rapport_path, "r", encoding="utf-8") as f:
+                texte = f.read()
             if rapport_path.exists():
                 st.subheader(" Rapport médical complet")
                 st.text_area("", rapport_path.read_text(encoding="utf-8"), height=450)
+                st.text("Commentaire médical")
+                commentaire= st.text_area("") 
             else:
                 st.warning(f"Rapport non trouvé pour la nuit {selected_id}")
 
@@ -153,3 +160,44 @@ else:
     st.warning("Aucune nuit trouvée dans la base.")
 
 st.sidebar.caption(f"Actualisé : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+st.header('Valider le rapport')
+button1 = st.button('Valider')
+
+
+
+if button1: 
+    if commentaire != "":
+        pdf = FPDF('P', 'mm', 'A4')
+
+    #première page
+        pdf.add_page()
+        pdf.set_font(family='Times', size=12)
+        pdf.set_font("helvetica", size=14)
+        pdf.multi_cell(0, 8, texte)
+
+        # def  chapitre_commentaire (self, num, label): 
+        #     self.set_font("helvetica", size=14)
+        #     self.set_fill_color(200, 220, 255)
+        pdf.cell(40, 10, "COMMENTAIRE MEDICAL", ln=True)
+        pdf.multi_cell(0, 8, commentaire)
+    
+    
+    #seconde page
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "spo2.png"), x=10, y=20, w=180)
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "debit_nasal.png"), x=10, y=20, w=180)
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "ronflements.png"), x=10, y=20, w=180)
+
+        pdf_bytes = pdf.output(dest="S").encode("latin1")
+        st.download_button(
+        "Télécharger PDF",
+        data=pdf_bytes,
+        file_name="rapport.pdf",
+        mime="application/pdf"
+        )
+
+    else:  
+        st.warning("Renseigner commentaire")

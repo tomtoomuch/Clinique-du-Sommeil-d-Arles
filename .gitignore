@@ -6,3 +6,5 @@ mdp.js
 datalake.db
 raw/**
 nuits/**
+models/
+patient/ 

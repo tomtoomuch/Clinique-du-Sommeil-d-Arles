@@ -1,13 +1,11 @@
 import os
 import sys
-import shutil
 import sqlite3
-import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
 import mysql.connector
 from mysql.connector import Error as MySQLError
-from mdp import motDePasse, bdd, port
+from mdp import motdepasse, bdd, port
 
 # ============================================================
 # CONFIGURATION
@@ -15,7 +13,7 @@ from mdp import motDePasse, bdd, port
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": motDePasse,
+    "password": motdepasse,
     "database": bdd,
     "port": port,
     
@@ -28,7 +26,6 @@ DB_PATH = "base_analytique.db"
 # UTILITAIRE : retrouver le CSV depuis l'id_nuit
 # ============================================================
 DOSSIER_RAW = "raw"
-
 
 def trouver_csv_depuis_id_patient(id_patient, dossier_raw=DOSSIER_RAW):
     """
@@ -177,7 +174,7 @@ def initialiser_database(chemin_db=DB_PATH):
 
 
 def alimenter_faits_suivi_cpap_jour(id_nuit, resultat, chemin_db=DB_PATH):
-   
+   # Prévoir d'alimenter également la base MySQL
     connexion = sqlite3.connect(chemin_db)
 
     df_cpap = pd.DataFrame([{

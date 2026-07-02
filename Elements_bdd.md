@@ -23,6 +23,7 @@
 Cette vue a été crée pour permettre au **médecin** de voir rapidement le suivi médical du patient au sein de la clinique.
 
 ```bash
+CREATE VIEW `historique_patient` AS
 SELECT
     patient.nom,
     patient.prenom,
@@ -150,11 +151,12 @@ BEGIN
         WHEN LOWER(p_position_dominante) LIKE '%vent%' THEN 'ventrale'
         ELSE 'mixte'
     END;
-
+	
+        
     -- Récupération complète depuis evenement_respiratoire
 SELECT
-    COUNT(CASE WHEN type_evenement LIKE '%apnee%' THEN 1 END),
-    COUNT(CASE WHEN type_evenement = 'hypopnee' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%apn%' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%hypo%' THEN 1 END),
     COUNT(CASE WHEN type_evenement = 'RERA' THEN 1 END),
     ROUND(AVG(duree_sec), 0),
     MAX(duree_sec)
@@ -163,9 +165,9 @@ FROM evenement_respiratoire
 WHERE id_nuit = p_id_nuit;
 
 -- AJOUT NÃ‰CESSAIRE : extrapolation 2h a 7h (Ã—3.5)
--- SET v_nb_apnees    = ROUND(v_nb_apnees * 3.5);
--- SET v_nb_hypopnees = ROUND(v_nb_hypopnees * 3.5);
--- SET v_nb_rera        = ROUND(v_nb_rera * 3.5);
+SET v_nb_apnees    = ROUND(v_nb_apnees);
+SET v_nb_hypopnees = ROUND(v_nb_hypopnees);
+SET v_nb_rera        = ROUND(v_nb_rera);
 
 -- Micro-Ã©veils : maintenant calcule depuis les valeurs deja  extrapolees
 SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
@@ -208,7 +210,8 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         duree_apnee_max_sec = VALUES(duree_apnee_max_sec),
         iah = VALUES(iah),
         duree_sommeil_min = VALUES(duree_sommeil_min),
-        date_validation = CURDATE();
+        date_validation = CURDATE(),
+        commentaire_medical = VALUES(commentaire_medical);
 
     SELECT 'OK' AS status,
            v_nb_apnees AS apnees,

@@ -26,7 +26,7 @@ import os
 import sys
 import shutil
 import sqlite3
-
+import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
 import mysql.connector
@@ -41,7 +41,8 @@ MYSQL_CONFIG = {
     "user": "root",
     "password": motdepasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    
 }
 
 DATALAKE_PATH = "datalake.db"
@@ -594,7 +595,7 @@ def deplacer_csv_traite(chemin_csv_source, dossier_traite="raw/traite"):
 # ============================================================
 # ORCHESTRATION : pipeline complet
 # ============================================================
-def executer_pipeline(id_nuit, id_medecin_validateur):
+def executer_pipeline(id_nuit, id_medecin_validateur, commentaire_medical):
     """
     Orchestre le pipeline complet pour une nuit donnée.
     Le CSV correspondant est retrouvé automatiquement dans raw/
@@ -616,13 +617,13 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
         print("\n[1/6] Extraction du CSV capteur (pandas)...")
         df = lire_csv_capteur(chemin_csv)
         print(f"  {len(df)} lignes lues")
-
+        
         # --- TRANSFORM ---
         print("\n[2/6] Calcul des indicateurs depuis le signal (pandas)...")
         indicateurs = calculer_indicateurs_signal(df, (df["timestamp_sec"].iloc[-1])/60)
         print(f"  SpO2 min: {indicateurs['spo2_min']} | "
               f"Position dominante: {indicateurs['position_dominante']}")
-
+        print(['position dominante'])
         # --- LOAD : écriture via procédure ---
         print("\n[3/6] Écriture du résultat via sp_creer_resultat_nuit...")
         confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical_arg)
@@ -646,12 +647,12 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
         alimenter_curated_nuit(id_nuit, resultat)
         deplacer_csv_traite(chemin_csv)
 
-        print(f"\n✓ Pipeline terminé : Patient #{id_patient} / Nuit #{id_nuit}\n")
+        print(f"\n Pipeline terminé : Patient #{id_patient} / Nuit #{id_nuit}\n")
         return resultat
 
     except Exception as erreur:
         print(
-            f"\n✗ ERREUR dans le pipeline pour id_nuit={id_nuit} : {erreur}",
+            f"\n ERREUR dans le pipeline pour id_nuit={id_nuit} : {erreur}",
             file=sys.stderr
         )
         raise
@@ -662,8 +663,8 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
 # ============================================================
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage : python pipeline_etl_pandas.py <id_nuit> <id_medecin_validateur>")
-        print("Exemple : python pipeline_etl_pandas.py 1 2")
+        print("Usage : python pipeline_etl_pandas.py <id_nuit> <id_medecin_validateur> <commentaire_medical>")
+        print("Exemple : python pipeline_etl_pandas.py 1 2 blabla blabla")
         sys.exit(1)
 
     try:
@@ -671,11 +672,11 @@ if __name__ == "__main__":
         id_medecin_validateur_arg = int(sys.argv[2])
         commentaire_medical_arg = str(sys.argv[3])
     except ValueError:
-        print("Erreur : id_nuit et id_medecin_validateur doivent être des nombres entiers.", file=sys.stderr)
+        print("Erreur : id_nuit et id_medecin_validateur doivent être des nombres entiers ou commentaire manquant.", file=sys.stderr)
         sys.exit(1)
 
     try:
-        executer_pipeline(id_nuit_arg, id_medecin_validateur_arg)
+        executer_pipeline(id_nuit_arg, id_medecin_validateur_arg, commentaire_medical_arg)
     except Exception as erreur:
         print(f"Erreur fatale : {erreur}", file=sys.stderr)
         sys.exit(1)

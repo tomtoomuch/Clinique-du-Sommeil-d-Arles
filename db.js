@@ -1,6 +1,5 @@
 const db = require('mysql2');
 const {motDePasse, bdd, port} = require('./mdp.js')
-
 const connexion = db.createConnection({
     host : 'localhost',
     user : 'root',

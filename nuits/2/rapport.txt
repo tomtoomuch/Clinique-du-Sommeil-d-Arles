@@ -8,14 +8,23 @@ Patient          : Isabelle Vernet
 Nuit d'étude      : #2
 Date              : 2024-11-05
 Type d'examen     : polygraphie
+<<<<<<< HEAD
 Médecin validateur: Dr Thomas Estri
+=======
+Médecin validateur: Dr Samia Bencherif
+>>>>>>> cedric
 
 ------------------------------------------------------------
   RÉSUMÉ DE LA NUIT
 ------------------------------------------------------------
 
+<<<<<<< HEAD
 Index Apnée-Hypopnée (IAH)      : 27.57 événements/heure
 Sévérité (calculée par la base)  : modéré
+=======
+Index Apnée-Hypopnée (IAH)      : 0.0 événements/heure
+Sévérité (calculée par la base)  : normal
+>>>>>>> cedric
 
 SpO2 minimale                    : 88.70 %
 SpO2 moyenne                     : 96.80 %
@@ -23,9 +32,15 @@ SpO2 médiane                     : 97.00 %
 Durée totale d'hypoxie           : 1 minutes
 
 Nombre d'apnées                  : 0
+<<<<<<< HEAD
 Nombre d'hypopnées               : 193
 Nombre de RERA                   : 28
 Nombre de micro-éveils estimé    : 221
+=======
+Nombre d'hypopnées               : 0
+Nombre de RERA                   : 8
+Nombre de micro-éveils estimé    : 8
+>>>>>>> cedric
 
 Durée apnée moyenne              : 19 secondes
 Durée apnée maximale             : 25 secondes
@@ -39,10 +54,17 @@ Ronflements forts (>70dB)         : 0
   DIAGNOSTIC
 ------------------------------------------------------------
 
+<<<<<<< HEAD
 SAHOS modéré
 
 Commentaire médical :
 ceci
+=======
+Normal (pas de SAHOS)
+
+Commentaire médical :
+test 
+>>>>>>> cedric
 
 ------------------------------------------------------------
   COURBES JOINTES
@@ -54,5 +76,9 @@ ceci
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
+<<<<<<< HEAD
   Validé le 2026-07-02 par Dr Estri.
+=======
+  Validé le 2026-07-01 par Dr Bencherif.
+>>>>>>> cedric
 ============================================================

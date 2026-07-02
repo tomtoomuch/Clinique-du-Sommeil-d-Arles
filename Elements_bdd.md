@@ -117,6 +117,21 @@ VIEW `nuitsommeilfase2`.`vue_medecin_consultation_prescription` AS
 ```
 
 # PROCEDURES STOCKEES
+## Procédure pour lire l'id_patient et l'id_suivi depuis la table suivi_patient
+
+Cette procédure reçoit l'id_patient en paramètre et retourne l'id suivi ainsi que l'id_suivi le plus proche
+
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_lire_suivi_patient`(
+	IN p_id_patient INT
+)
+BEGIN
+	SELECT id_suivi, id_patient
+    FROM suivi_patient
+    WHERE id_patient = p_id_patient;
+END
+```
+
 ## Procedure pour inscrire les données dans la table résultat nuit.
 
 Cette procédure a été modifié pour recevoir **l'ID du médecin validateur**.

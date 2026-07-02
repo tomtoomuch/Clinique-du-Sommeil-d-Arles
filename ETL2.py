@@ -39,7 +39,7 @@ def trouver_csv_depuis_id_patient(id_patient, dossier_raw=DOSSIER_RAW):
     --------
     (chemin_complet, id_patient)
     """
-    suffixe_recherche = f"_patient_{id_patient}.csv"
+    suffixe_recherche = f"patient_{id_patient}.csv"
 
     fichiers_trouves = [
         f for f in os.listdir(dossier_raw)
@@ -199,6 +199,50 @@ def alimenter_faits_suivi_cpap_jour(id_nuit, resultat, chemin_db=DB_PATH):
     print(f"  Ligne curated_nuit insérée pour id_nuit={id_nuit}")
 
 
+
+def lire_suivi_patient(id_patient):
+    """
+    Appelle la procédure sp_lire_suivi_patient pour récupérer
+    toutes les infos nécessaires à l'insertion des données dans la base analytique.
+
+    On ne fait jamais de SELECT brut sur les tables depuis Python :
+    la lecture passe toujours par cette procédure, comme l'écriture
+    passe toujours par sp_creer_suivi_cpap_jour.
+
+    Lève
+    ----
+    RuntimeError : si l'appel à la procédure échoue côté MySQL
+    ValueError : si aucun résultat n'existe pour cet id_nuit
+    """
+    connexion = None
+    try:
+        connexion = mysql.connector.connect(**MYSQL_CONFIG)
+        curseur = connexion.cursor(dictionary=True)
+
+        curseur.callproc("sp_lire_suivi_patient", [id_patient])
+
+        resultat = None
+        for jeu_resultat in curseur.stored_results():
+            resultat = jeu_resultat.fetchall()
+
+        curseur.close()
+
+    except MySQLError as erreur:
+        raise RuntimeError(
+            f"Erreur MySQL lors de l'appel à sp_lire_suivi_patient "
+            f"pour id_patient={id_patient} : {erreur}"
+        ) from erreur
+
+    finally:
+        if connexion is not None and connexion.is_connected():
+            connexion.close()
+
+    if resultat is None:
+        raise ValueError(
+            f"Aucun résultat trouvé pour id_patient={id_patient}."
+        )
+
+    return resultat
 
 # ============================================================
 # ORCHESTRATION : pipeline complet

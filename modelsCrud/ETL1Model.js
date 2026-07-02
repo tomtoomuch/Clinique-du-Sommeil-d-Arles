@@ -12,6 +12,7 @@ function lancerScript(req, res) {
         "./pipeline_etl_pandas.py",
         req.query.id_nuit,
         req.query.id_medecin_validateur,
+        req.query.commentaire_medical
        
     ]);
 

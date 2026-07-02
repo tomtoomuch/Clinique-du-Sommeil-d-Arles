@@ -42,7 +42,8 @@ MYSQL_CONFIG = {
     "user": "root",
     "password": motDePasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    
 }
 
 DATALAKE_PATH = "datalake.db"
@@ -243,7 +244,7 @@ def diagnostic_depuis_iah(iah):
 # ============================================================
 # 3) LOAD : écriture en base (procédure sp_creer_resultat_nuit)
 # ============================================================
-def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs):
+def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical):
     """
     Appelle la procédure stockée sp_creer_resultat_nuit pour insérer
     (ou mettre à jour) le résultat de la nuit. La procédure se
@@ -272,7 +273,8 @@ def ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs):
             indicateurs["decibels_max"],
             indicateurs["decibels_moy"],
             indicateurs["nb_ronflements_forts"],
-            indicateurs["duree_sommeil_min"]
+            indicateurs["duree_sommeil_min"],
+            commentaire_medical
             
         ])
 
@@ -594,7 +596,7 @@ def deplacer_csv_traite(chemin_csv_source, dossier_traite="raw/traite"):
 # ============================================================
 # ORCHESTRATION : pipeline complet
 # ============================================================
-def executer_pipeline(id_nuit, id_medecin_validateur):
+def executer_pipeline(id_nuit, id_medecin_validateur, commentaire_medical):
     """
     Orchestre le pipeline complet pour une nuit donnée.
     Le CSV correspondant est retrouvé automatiquement dans raw/
@@ -616,16 +618,16 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
         print("\n[1/6] Extraction du CSV capteur (pandas)...")
         df = lire_csv_capteur(chemin_csv)
         print(f"  {len(df)} lignes lues")
-
+        
         # --- TRANSFORM ---
         print("\n[2/6] Calcul des indicateurs depuis le signal (pandas)...")
         indicateurs = calculer_indicateurs_signal(df, (df["timestamp_sec"].iloc[-1])/60)
         print(f"  SpO2 min: {indicateurs['spo2_min']} | "
               f"Position dominante: {indicateurs['position_dominante']}")
-
+        print(['position dominante'])
         # --- LOAD : écriture via procédure ---
         print("\n[3/6] Écriture du résultat via sp_creer_resultat_nuit...")
-        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs)
+        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical)
         print(f"  IAH calculé par la procédure : {confirmation['iah']}")
         print(f"  Diagnostic : {diagnostic_depuis_iah(float(confirmation['iah']))}")
 
@@ -661,20 +663,21 @@ def executer_pipeline(id_nuit, id_medecin_validateur):
 # POINT D'ENTRÉE
 # ============================================================
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage : python pipeline_etl_pandas.py <id_nuit> <id_medecin_validateur>")
-        print("Exemple : python pipeline_etl_pandas.py 1 2")
+    if len(sys.argv) < 4:
+        print("Usage : python pipeline_etl_pandas.py <id_nuit> <id_medecin_validateur> <commentaire_medical>")
+        print("Exemple : python pipeline_etl_pandas.py 1 2 blabla blabla")
         sys.exit(1)
 
     try:
         id_nuit_arg = int(sys.argv[1])
         id_medecin_validateur_arg = int(sys.argv[2])
+        commentaire_medical_arg = sys.argv[3]
     except ValueError:
-        print("Erreur : id_nuit et id_medecin_validateur doivent être des nombres entiers.", file=sys.stderr)
+        print("Erreur : id_nuit et id_medecin_validateur doivent être des nombres entiers ou commentaire manquant.", file=sys.stderr)
         sys.exit(1)
 
     try:
-        executer_pipeline(id_nuit_arg, id_medecin_validateur_arg)
+        executer_pipeline(id_nuit_arg, id_medecin_validateur_arg, commentaire_medical_arg)
     except Exception as erreur:
         print(f"Erreur fatale : {erreur}", file=sys.stderr)
         sys.exit(1)

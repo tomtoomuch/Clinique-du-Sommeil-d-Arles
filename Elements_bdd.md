@@ -117,7 +117,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_creer_resultat_nuit`(
     IN p_decibels_max DECIMAL(5,2),
     IN p_decibels_moy DECIMAL(5,2),
     IN p_nb_ronflements_forts INT,
-    IN p_duree_sommeil_min INT
+    IN p_duree_sommeil_min INT,
+    IN p_commentaire_medical TEXT
 )
 BEGIN
     DECLARE v_nb_apnees INT DEFAULT 0;
@@ -134,11 +135,12 @@ BEGIN
         WHEN LOWER(p_position_dominante) LIKE '%vent%' THEN 'ventrale'
         ELSE 'mixte'
     END;
-
+	
+        
     -- Récupération complète depuis evenement_respiratoire
 SELECT
-    COUNT(CASE WHEN type_evenement LIKE '%apnee%' THEN 1 END),
-    COUNT(CASE WHEN type_evenement = 'hypopnee' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%apn%' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%hypo%' THEN 1 END),
     COUNT(CASE WHEN type_evenement = 'RERA' THEN 1 END),
     ROUND(AVG(duree_sec), 0),
     MAX(duree_sec)
@@ -147,9 +149,9 @@ FROM evenement_respiratoire
 WHERE id_nuit = p_id_nuit;
 
 -- AJOUT NÃ‰CESSAIRE : extrapolation 2h a 7h (Ã—3.5)
--- SET v_nb_apnees    = ROUND(v_nb_apnees * 3.5);
--- SET v_nb_hypopnees = ROUND(v_nb_hypopnees * 3.5);
--- SET v_nb_rera        = ROUND(v_nb_rera * 3.5);
+SET v_nb_apnees    = ROUND(v_nb_apnees);
+SET v_nb_hypopnees = ROUND(v_nb_hypopnees);
+SET v_nb_rera        = ROUND(v_nb_rera);
 
 -- Micro-Ã©veils : maintenant calcule depuis les valeurs deja  extrapolees
 SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
@@ -161,7 +163,7 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         decibels_max, decibels_moy, nb_ronflements_forts,
         nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,
         duree_apnee_moy_sec, duree_apnee_max_sec,
-        iah, duree_sommeil_min
+        iah, duree_sommeil_min, commentaire_medical
     )
     VALUES (
         p_id_nuit,
@@ -173,7 +175,8 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         v_nb_apnees, v_nb_hypopnees, v_nb_rera, v_nb_microeveils,
         v_duree_apnee_moy, v_duree_apnee_max,
         ROUND((v_nb_apnees + v_nb_hypopnees)/(p_duree_sommeil_min/60), 2),   -- 
-        p_duree_sommeil_min
+        p_duree_sommeil_min,
+        p_commentaire_medical
     )
     ON DUPLICATE KEY UPDATE
         spo2_min = VALUES(spo2_min),
@@ -192,7 +195,8 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         duree_apnee_max_sec = VALUES(duree_apnee_max_sec),
         iah = VALUES(iah),
         duree_sommeil_min = VALUES(duree_sommeil_min),
-        date_validation = CURDATE();
+        date_validation = CURDATE(),
+        commentaire_medical = VALUES(commentaire_medical);
 
     SELECT 'OK' AS status,
            v_nb_apnees AS apnees,

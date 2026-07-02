@@ -42,7 +42,7 @@ def trouver_csv_depuis_id_patient(id_patient, dossier_raw=DOSSIER_RAW):
     --------
     (chemin_complet, id_patient)
     """
-    suffixe_recherche = f"_patient_{id_patient}.csv"
+    suffixe_recherche = f"patient_{id_patient}.csv"
 
     fichiers_trouves = [
         f for f in os.listdir(dossier_raw)
@@ -64,6 +64,8 @@ def trouver_csv_depuis_id_patient(id_patient, dossier_raw=DOSSIER_RAW):
 
     nom_fichier = fichiers_trouves[0]
     chemin_complet = os.path.join(dossier_raw, nom_fichier)
+
+    return chemin_complet
 
 
 # ============================================================
@@ -94,7 +96,7 @@ def lire_csv_capteur(chemin_fichier):
     # cryptique plus tard dans le pipeline si une colonne est mal nommée
     colonnes_obligatoires = {
         "id_suivi", "id_appareil", "date_jour", "duree_utilisation_h", "iah_residuel",
-          "fuites_l_min", "nb_evenements", "qualité_donnee"
+          "fuites_l_min", "nb_evenements", "qualite_donnee"
         
     }
     colonnes_manquantes = colonnes_obligatoires - set(df.columns)
@@ -108,31 +110,31 @@ def lire_csv_capteur(chemin_fichier):
 # ============================================================
 # 2) TRANSFORM : calcul des alertes avec pandas
 # ============================================================
-def calculer_alerte_observance(duree_utilisation_h):
-    """
+# def calculer_alerte_observance(duree_utilisation_h):
+#     """
    
-    Paramètres
-    ----------
-    df : DataFrame : sortie de lire_csv_capteur()
+#     Paramètres
+#     ----------
+#     df : DataFrame : sortie de lire_csv_capteur()
 
-    Retourne
-    --------
-    dict avec les indicateurs prêts à être passés à la procédure.
-    """
+#     Retourne
+#     --------
+#     dict avec les indicateurs prêts à être passés à la procédure.
+#     """
 
-    if duree_utilisation_h >= 4:
-        return 0
-    else :
-        return 1
+#     if duree_utilisation_h >= 4:
+#         return 0
+#     else :
+#         return 1
 
  
 
-def calculer_alerte_iah_residuel(iah_residuel):
-    """Retourne alerte selon l'IAH_residuel."""
-    if iah_residuel >= 5:
-        return 1
-    else:
-        return 0
+# def calculer_alerte_iah_residuel(iah_residuel):
+#     """Retourne alerte selon l'IAH_residuel."""
+#     if iah_residuel >= 5:
+#         return 1
+#     else:
+#         return 0
 
 
 # ============================================================
@@ -142,7 +144,7 @@ def initialiser_database(chemin_db=DB_PATH):
     """Crée la table faits_suivi_cpap_jour si elle n'existe pas."""
     connexion = sqlite3.connect(chemin_db)
     connexion.execute("""
-        CREATE TABLE faits_suivi_cpap_jour (
+         CREATE TABLE IF NOT EXISTS faits_suivi_cpap_jour (
     id_fait_suivi_jour  INTEGER PRIMARY KEY AUTOINCREMENT,
     id_suivi_source      INTEGER NOT NULL,   -- id_suivi d'origine dans clinique_v2 (traçabilité)
     id_patient           INTEGER NOT NULL,
@@ -176,30 +178,33 @@ def initialiser_database(chemin_db=DB_PATH):
 
 
 
-def alimenter_faits_suivi_cpap_jour(id_nuit, resultat, chemin_db=DB_PATH):
+def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, duree_utilisation_h, iah_residuel, 
+                                    fuites_l_min, nb_evenements, qualite_donnee, chemin_db=DB_PATH):
    
     connexion = sqlite3.connect(chemin_db)
 
+    alerte_observance_insuffisante = 1 if duree_utilisation_h < 4 else 0
+    alerte_iah_eleve = 1 if iah_residuel > 5 else 0
+
     df_cpap = pd.DataFrame([{
-        "id_nuit": id_nuit,
-        "spo2_min": float(resultat["spo2_min"]),
-        "spo2_moy": float(resultat["spo2_moy"]),
-        "spo2_mediane": float(resultat["spo2_mediane"]),
-        "nb_apnees": resultat["nb_apnees"],
-        "nb_hypopnees": resultat["nb_hypopnees"],
-        "nb_rera": resultat["nb_rera"],
-        "nb_microeveils": resultat["nb_microeveils"],
-        "duree_hypoxie_min": float(resultat["duree_hypoxie_min"]),
-        "position_dominante": resultat["position_dominante"],
-        "decibels_max": float(resultat["decibels_max"]),
-        "decibels_moy": float(resultat["decibels_moy"]),
-        "nb_ronflements_forts": resultat["nb_ronflements_forts"],
+        "id_suivi_source":id_suivi_source,
+        "id_patient": id_patient, 
+        "id_temps":20240506,      
+        "duree_utilisation_h": duree_utilisation_h,
+        "iah_residuel": iah_residuel,
+        "fuites_l_min": fuites_l_min,
+        "nb_evenements": nb_evenements,
+        "qualite_donnee": qualite_donnee,
+        "id_suivi_le_plus_proche" : 55,
+        "alerte_observance_insuffisante": alerte_observance_insuffisante,
+        "alerte_iah_eleve": alerte_iah_eleve,
+        
     }])
 
-    df_cpap.to_sql("curated_nuit", connexion, if_exists="append", index=False)
+    df_cpap.to_sql("faits_suivi_cpap_jour", connexion, if_exists="append", index=False)
 
     connexion.close()
-    print(f"  Ligne curated_nuit insérée pour id_nuit={id_nuit}")
+    print(f"  Ligne faits_suivi_cpap_jour insérée pour id_patient={id_patient}")
 
 
 
@@ -230,31 +235,29 @@ def executer_pipeline(id_patient):
         
         # --- TRANSFORM ---
         print("\n[2/6] Calcul des alertes depuis le signal (pandas)...")
-        indicateurs = calculer_indicateurs_signal(df, (df["timestamp_sec"].iloc[-1])/60)
-        print(f"  SpO2 min: {indicateurs['spo2_min']} | "
-              f"Position dominante: {indicateurs['position_dominante']}")
-        print(['position dominante'])
-        # --- LOAD : écriture via procédure ---
-        print("\n[3/6] Écriture du résultat via sp_creer_resultat_nuit...")
-        confirmation = ecrire_resultat_nuit(id_nuit, id_medecin_validateur, indicateurs, commentaire_medical)
-        print(f"  IAH calculé par la procédure : {confirmation['iah']}")
-        print(f"  Diagnostic : {diagnostic_depuis_iah(float(confirmation['iah']))}")
+       
+        
 
-        # --- LOAD : lecture via procédure pour le rapport ---
-        print("\n[4/6] Lecture du résultat complet via sp_lire_resultat_nuit...")
-        resultat = lire_resultat_nuit(id_nuit)
-
-            
-
-        # --- LOAD : datalake ---
+       
+        # --- LOAD : db ---
         print("\n[6/6] Alimentation de la DB SQLite...")
         initialiser_database()
-        alimenter_raw_capteur(df, id_patient)
-        alimenter_curated_nuit(id_patient, resultat)
+        
+        for row in df.itertuples(index=False):
+            alimenter_faits_suivi_cpap_jour(
+                id_suivi_source=row.id_suivi,
+                id_patient=id_patient,
+                duree_utilisation_h=row.duree_utilisation_h,
+                iah_residuel=row.iah_residuel,
+                fuites_l_min=row.fuites_l_min,
+                nb_evenements=row.nb_evenements,
+                qualite_donnee=row.qualite_donnee,
+                chemin_db=DB_PATH
+    )
         
 
         print(f"\n Pipeline terminé : Patient #{id_patient}\n")
-        return resultat
+        
 
     except Exception as erreur:
         print(

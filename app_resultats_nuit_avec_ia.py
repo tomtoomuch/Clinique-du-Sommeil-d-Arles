@@ -48,6 +48,7 @@ def get_liste_nuits():
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         df = pd.read_sql("""
+
             SELECT n.id_nuit, p.id_patient, p.nom, p.prenom, n.date_nuit, r.iah, r.severite_iah
             FROM nuit_etude n
             JOIN patient p ON p.id_patient = n.id_patient

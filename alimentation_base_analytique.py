@@ -1,175 +1,178 @@
 import sqlite3
 import mysql.connector
+import pandas as pd
+from datetime import datetime, timedelta
 
 from mdp import motdepasse, bdd, port
-# from extract_csv import df, nuit_id
-# from transformation_CSV import resultats
 
-#conecto mysql
-cnx_mysql = mysql.connector.connect(
-    user = 'root',
-    password = motdepasse,
-    host = 'localhost',
-    database = bdd,
-    port = port,
-    use_pure= True
+conexion = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password=motdepasse,
+    database=bdd,
+    port=port,
+    use_pure=True
 )
 
-cur_mysql = cnx_mysql.cursor(dictionary=True)
-
-cur_mysql.execute("""
-SELECT
-    nb_apnees,
-    nb_hypopnees,
-    nb_rera
-FROM resultat_nuit
-WHERE id_nuit = %s
-""", (id_nuit,))
-
-ligne_mysql = cur_mysql.fetchone()
-
-nb_apnees = int(ligne_mysql["nb_apnees"])
-nb_hypopnees = int(ligne_mysql["nb_hypopnees"])
-nb_rera = int(ligne_mysql["nb_rera"])
-# calcule
-nb_microeveils = nb_apnees + nb_hypopnees + nb_rera
-
-cur_mysql.close()
-cnx_mysql.close()
-
-#conection SQL
-
-cnx_sqlite = sqlite3.connect("datalake.db")
-cursor = cnx_sqlite.cursor()
+cur_mysql = conexion.cursor(dictionary=True)
+conexion_sqlite = sqlite3.connect("base_analytique.db")
+cursor_sqlite = conexion_sqlite.cursor()
 
 
+# =============================================================
+# Alimentation de la table dim_temps dans la base_analytique (SQLit)
+# =============================================================
 
+# Dates de début et de fin
+date_debut = datetime(2020, 1, 1)
+date_fin = datetime(2027, 12, 31)
 
-# #Variables convertidas de diccionario pandas a solo variable 
-# id_nuit = int(nuit_id)
-# spo2_min = float(resultats["spo2_min"])
-# spo2_moy = float(resultats["spo2_moy"])
-# spo2_mediane = float(resultats["spo2_mediane"])
-# duree_hypoxie_min = float(resultats["duree_hypoxie_min"])
-# position_dominante = str(resultats["position_dominante"])
-# decibels_max = float(resultats["decibels_max"])
-# decibels_moy = float(resultats["decibels_moy"])
-# nb_ronflements_forts = int(resultats["nb_ronflements_forts"])
+# Initialisation
+date_courante = date_debut
 
+# Jours de la semaine
+jours = [
+    "lundi",
+    "mardi",
+    "mercredi",
+    "jeudi",
+    "vendredi",
+    "samedi",
+    "dimanche"
+]
 
+while date_courante <= date_fin:
 
+    id_temps = int(date_courante.strftime("%Y%m%d"))
+    date_complete = date_courante.strftime("%Y-%m-%d")
+    annee = date_courante.year
+    mois = date_courante.month
+    jour = date_courante.day
+    trimestre = (mois - 1) // 3 + 1
+    jour_semaine = jours[date_courante.weekday()]
+    est_weekend = 1 if date_courante.weekday() >= 5 else 0
 
-#tabla raw
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS raw_capteur (
-    id_raw INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_nuit INTEGER NOT NULL,
-    timestamp_sec INTEGER NOT NULL,
-    spo2 REAL,
-    debit_nasal_pct REAL,
-    effort_thoracique_pct REAL,
-    position TEXT,
-    ronflements_db REAL,
-    flag_evenement INTEGER CHECK (flag_evenement IN (0,1))
-)
-""")
-
-#Tabla curada 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS curated_nuit (
-    id_curated INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_nuit INTEGER NOT NULL,
-    spo2_min REAL,
-    spo2_moy REAL,
-    spo2_mediane REAL,
-    nb_apnees INTEGER,
-    nb_hypopnees INTEGER,
-    nb_rera INTEGER,
-    nb_microeveils INTEGER,
-    duree_hypoxie_min REAL,
-    position_dominante TEXT,
-    decibels_max REAL,
-    decibels_moy REAL,
-    nb_ronflements_forts INTEGER
-)
-""")
-
-
-#llenado de raw
-
-cursor.execute("SELECT COUNT(*) FROM raw_capteur WHERE id_nuit = ?", (id_nuit,))
-existe_raw = cursor.fetchone()[0]
-
-if existe_raw == 0:
-    for _, row in df.iterrows():
-        cursor.execute("""
-        INSERT INTO raw_capteur (
-            id_nuit,
-            timestamp_sec,
-            spo2,
-            debit_nasal_pct,
-            effort_thoracique_pct,
-            position,
-            ronflements_db,
-            flag_evenement
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            id_nuit,
-            int(row["timestamp_sec"]),
-            float(row["spo2"]),
-            float(row["debit_nasal_pct"]),
-            float(row["effort_thoracique_pct"]),
-            str(row["position"]),
-            float(row["ronflements_db"]),
-            int(row["flag_evenement"])
-        ))
-else:
-    print(f"raw_capteur déjà rempli pour id_nuit = {id_nuit}")
-
-#llenado de curate
-
-cursor.execute("SELECT COUNT(*) FROM curated_nuit WHERE id_nuit = ?", (id_nuit,))
-existe_curated = cursor.fetchone()[0]
-
-if existe_curated == 0:
-    cursor.execute("""
-    INSERT INTO curated_nuit (
-        id_nuit,
-        spo2_min,
-        spo2_moy,
-        spo2_mediane,
-        nb_apnees,
-        nb_hypopnees,
-        nb_rera,
-        nb_microeveils,
-        duree_hypoxie_min,
-        position_dominante,
-        decibels_max,
-        decibels_moy,
-        nb_ronflements_forts
+    cursor_sqlite.execute(
+        "SELECT 1 FROM dim_temps WHERE id_temps = ?",
+        (id_temps,)
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        id_nuit,
-        spo2_min,
-        spo2_moy,
-        spo2_mediane,
-        nb_apnees,
-        nb_hypopnees,
-        nb_rera,
-        nb_microeveils,
-        duree_hypoxie_min,
-        position_dominante,
-        decibels_max,
-        decibels_moy,
-        nb_ronflements_forts
-    ))
-else:
-    print(f"curated_nuit déjà rempli pour id_nuit = {id_nuit}")
 
-cnx_sqlite.commit()
-cnx_sqlite.close()
+    if cursor_sqlite.fetchone() is None:
+        cursor_sqlite.execute("""
+            INSERT INTO dim_temps (
+                id_temps,
+                date_complete,
+                annee,
+                mois,
+                jour,
+                trimestre,
+                jour_semaine,
+                est_weekend
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            id_temps,
+            date_complete,
+            annee,
+            mois,
+            jour,
+            trimestre,
+            jour_semaine,
+            est_weekend
+        ))
 
-print("Datalake SQLite créé et rempli avec succès.")
+    date_courante += timedelta(days=1)
+
+print("Dimension temps mise à jour.")
+
+# =============================================================
+# Alimentation de la table dim_patient dans la base_analytique (SQLit) depuis la base MySQL
+# =============================================================
+
+def charger_dim_patient(id_patient):
+    query = """
+        SELECT
+            id_patient, nom, prenom, date_naissance, sexe,
+            imc_initial, fumeur AS fumeur_initial,
+            pa_tabac AS pa_tabac_initial, profession,
+            niveau_activite, CURDATE() AS date_maj
+        FROM patient
+        WHERE id_patient = %s
+    """
+    df = pd.read_sql(query, conexion, params=[id_patient])
+
+    if df.empty:
+        print(f"Patient {id_patient} introuvable")
+        return
+
+    fila = df.iloc[0]
+    # print(fila)
+
+    cursor_sqlite.execute(
+        """INSERT OR IGNORE INTO dim_patient
+           (id_patient, nom, prenom, date_naissance, sexe, imc_initial,
+            fumeur_initial, pa_tabac_initial, profession, niveau_activite, date_maj)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (
+        int(fila["id_patient"]),
+        str(fila["nom"]),
+        str(fila["prenom"]),
+        str(fila["date_naissance"]),
+        str(fila["sexe"]),
+        float(fila["imc_initial"]),
+        str(fila["fumeur_initial"]),
+        float(fila["pa_tabac_initial"]),
+        str(fila["profession"]),
+        str(fila["niveau_activite"]),
+        str(fila["date_maj"]),
+    )
+
+    )
+    conexion_sqlite.commit()
+    print(f"Patient {id_patient} traité")
+
+
+charger_dim_patient(1)
+
+
+# =============================================================
+# Alimentation de la table fait_nuit dans la base_analytique (SQLit) depuis la base MySQL
+# =============================================================
+
+def charger_fait_nuit(id_patient):
+
+    p_id_patient= int(1)
+
+    cur_mysql.callproc('recuperation_donnees_pour_faits_nuit_base_analytique',[p_id_patient])
+
+    confirmation = None
+    for result in cur_mysql.stored_results(): 
+        confirmation= result.fetchone()
+    print(confirmation)
+
+    return confirmation
+
+    
+
+
+# if df1.empty:
+#     print(f"Patient {p_id_patient} introuvable")
+    
+# fila = df.iloc[0]
+# print(fila)
+
+
+
+# # cursor_sqlite.execute(
+# #         """INSERT OR IGNORE INTO fait_nuits
+# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+# #            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+
+
+
+conexion.close()
+conexion_sqlite.close()
+

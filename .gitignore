@@ -5,6 +5,6 @@ mdp.py
 mdp.js
 datalake.db
 raw/**
-nuits/**
+nuits/
 models/
 patient/ 

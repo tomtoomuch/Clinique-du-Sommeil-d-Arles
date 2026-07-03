@@ -236,4 +236,44 @@ BEGIN
         ON patient_comorbidite.id_comorbidite = comorbidite.id_comorbidite
     WHERE patient.nom = p_nomPatient;
 END
+
+```
+## Procedure pour alimenter la table fait_nuit dans la base_analytique depuis MYSQL
+Cette procédure permets de récupérer sur l'ETL les éléments de la table resultat_nuit de la table MSQL pour pouvoir alimenter la table fat_nuit de la base analytique.
+
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `recuperation_donnees_pour_faits_nuit_base_analytique`(
+IN p_id_patient INT
+)
+BEGIN 
+ SELECT
+ id_patient,
+ resultat_nuit.spo2_min, 
+ resultat_nuit.spo2_mediane, 
+ resultat_nuit.spo2_moy, 
+ resultat_nuit.nb_apnees,
+ resultat_nuit.nb_hypopnees,
+ resultat_nuit.nb_rera,
+ resultat_nuit.nb_microeveils,
+ resultat_nuit.duree_sommeil_min,
+ resultat_nuit.duree_hypoxie_min,
+ resultat_nuit.position_dominante, 
+ resultat_nuit.decibels_max, 
+ resultat_nuit.decibels_moy,  
+ resultat_nuit.nb_ronflements_forts,  
+ CASE
+    WHEN resultat_nuit.nb_apnees = 0 THEN 0
+    ELSE (SELECT COUNT(*)
+        FROM evenement_respiratoire
+        WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
+          AND evenement_respiratoire.type_evenement = 'apnée centrale'
+    )* 100.0 / resultat_nuit.nb_apnees
+    END AS ptc_apnees_centrales 
+
+FROM resultat_nuit
+LEFT JOIN nuit_etude
+    ON resultat_nuit.id_nuit = nuit_etude.id_nuit
+WHERE p_id_patient;
+
+END
 ```

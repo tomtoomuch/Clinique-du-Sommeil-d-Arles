@@ -1,22 +1,23 @@
 import sqlite3
 import mysql.connector
+import pandas as pd
 from datetime import datetime, timedelta
 
 from mdp import motdepasse, bdd, port
 
-cnx_mysql = mysql.connector.connect(
-    user='root',
+conexion = mysql.connector.connect(
+    host="localhost",
+    user="root",
     password=motdepasse,
-    host='localhost',
     database=bdd,
     port=port,
+    use_pure=True
 )
 
-cur_mysql = cnx_mysql.cursor(dictionary=True)
+cur_mysql = conexion.cursor(dictionary=True)
+conexion_sqlite = sqlite3.connect("base_analytique.db")
+cursor_sqlite = conexion_sqlite.cursor()
 
-# Connexion à la base analytique SQLite
-conn = sqlite3.connect("base_analytique.db")
-cursor = conn.cursor()
 
 # =============================================================
 # Alimentation de la table dim_temps dans la base_analytique (SQLit)
@@ -51,13 +52,13 @@ while date_courante <= date_fin:
     jour_semaine = jours[date_courante.weekday()]
     est_weekend = 1 if date_courante.weekday() >= 5 else 0
 
-    cursor.execute(
+    cursor_sqlite.execute(
         "SELECT 1 FROM dim_temps WHERE id_temps = ?",
         (id_temps,)
     )
 
-    if cursor.fetchone() is None:
-        cursor.execute("""
+    if cursor_sqlite.fetchone() is None:
+        cursor_sqlite.execute("""
             INSERT INTO dim_temps (
                 id_temps,
                 date_complete,
@@ -82,46 +83,96 @@ while date_courante <= date_fin:
 
     date_courante += timedelta(days=1)
 
-conn.commit()
-conn.close()
-
 print("Dimension temps mise à jour.")
+
+# =============================================================
+# Alimentation de la table dim_patient dans la base_analytique (SQLit) depuis la base MySQL
+# =============================================================
+
+def charger_dim_patient(id_patient):
+    query = """
+        SELECT
+            id_patient, nom, prenom, date_naissance, sexe,
+            imc_initial, fumeur AS fumeur_initial,
+            pa_tabac AS pa_tabac_initial, profession,
+            niveau_activite, CURDATE() AS date_maj
+        FROM patient
+        WHERE id_patient = %s
+    """
+    df = pd.read_sql(query, conexion, params=[id_patient])
+
+    if df.empty:
+        print(f"Patient {id_patient} introuvable")
+        return
+
+    fila = df.iloc[0]
+    # print(fila)
+
+    cursor_sqlite.execute(
+        """INSERT OR IGNORE INTO dim_patient
+           (id_patient, nom, prenom, date_naissance, sexe, imc_initial,
+            fumeur_initial, pa_tabac_initial, profession, niveau_activite, date_maj)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (
+        int(fila["id_patient"]),
+        str(fila["nom"]),
+        str(fila["prenom"]),
+        str(fila["date_naissance"]),
+        str(fila["sexe"]),
+        float(fila["imc_initial"]),
+        str(fila["fumeur_initial"]),
+        float(fila["pa_tabac_initial"]),
+        str(fila["profession"]),
+        str(fila["niveau_activite"]),
+        str(fila["date_maj"]),
+    )
+
+    )
+    conexion_sqlite.commit()
+    print(f"Patient {id_patient} traité")
+
+
+charger_dim_patient(1)
+
 
 # =============================================================
 # Alimentation de la table fait_nuit dans la base_analytique (SQLit) depuis la base MySQL
 # =============================================================
 
-CREATE PROCEDURE `recuperation_donnees_pour_faits_nuit_base_analytique` (
-IN p_id_patient INT
-)
-BEGIN 
- SELECT
- id_patient,
- resultat_nuit.spo2_min, 
- resultat_nuit.spo2_mediane, 
- resultat_nuit.spo2_moy, 
- resultat_nuit.nb_apnees,
- resultat_nuit.nb_hypopnees,
- resultat_nuit.nb_rera,
- resultat_nuit.nb_microeveils,
- resultat_nuit.duree_sommeil_min,
- resultat_nuit.duree_hypoxie_min,
- resultat_nuit.position_dominante, 
- resultat_nuit.decibels_max, 
- resultat_nuit.decibels_moy,  
- resultat_nuit.nb_ronflements_forts,  
- CASE
-    WHEN resultat_nuit.nb_apnees = 0 THEN 0
-    ELSE (SELECT COUNT(*)
-        FROM evenement_respiratoire
-        WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
-          AND evenement_respiratoire.type_evenement = 'apnée centrale'
-    )* 100.0 / resultat_nuit.nb_apnees
-    END AS ptc_apnees_centrales 
+def charger_fait_nuit(id_patient):
 
-FROM resultat_nuit
-LEFT JOIN nuit_etude
-    ON resultat_nuit.id_nuit = nuit_etude.id_nuit
-WHERE p_id_patient;
+    p_id_patient= int(1)
 
-END
+    cur_mysql.callproc('recuperation_donnees_pour_faits_nuit_base_analytique',[p_id_patient])
+
+    confirmation = None
+    for result in cur_mysql.stored_results(): 
+        confirmation= result.fetchone()
+    print(confirmation)
+
+    return confirmation
+
+    
+
+
+# if df1.empty:
+#     print(f"Patient {p_id_patient} introuvable")
+    
+# fila = df.iloc[0]
+# print(fila)
+
+
+
+# # cursor_sqlite.execute(
+# #         """INSERT OR IGNORE INTO fait_nuits
+# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+# #            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+
+
+
+conexion.close()
+conexion_sqlite.close()
+

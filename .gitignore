@@ -4,6 +4,7 @@ __pycache__/
 mdp.py 
 mdp.js
 datalake.db
+base_analytique.db
 raw/**
 nuits/
 models/

@@ -1,9 +1,10 @@
 const {connexion} = require('../db.js');
 
 
-function getMedecin(){
+
+function getPatients(){
     return new Promise ((resolve,reject) => { 
-        connexion.query('SELECT * FROM medecin LEFT JOIN personnel ON medecin.id_personnel = personnel.id_personnel;', 
+        connexion.query('SELECT * FROM patient;', 
             (err,rows) => {
                 if (err){
                         console.log(err.message);
@@ -16,5 +17,4 @@ function getMedecin(){
     })
 }
 
-
-module.exports = {getMedecin}
+module.exports = {getPatients}

@@ -11,6 +11,7 @@ from fpdf import FPDF
 from mdp import motdepasse, bdd, port
 from genericpath import exists
 import os
+from alimentation_base_analytique import charger_fait_nuit
 
 # Import du module IA
 from ia_comorbidites import get_comorbidite_probable, afficher_prediction_comorbidites
@@ -184,6 +185,7 @@ button1 = st.button('Valider')
 if button1: 
     if commentaire != "":
         pdf = FPDF('P', 'mm', 'A4')
+       
 
     #première page : rapport de la nuit
         pdf.add_page()
@@ -214,6 +216,11 @@ if button1:
         pdf.output(str(pdf_path))
 
         pdf_bytes = pdf.output(dest="S").encode("latin1")
+
+    #  # Ici on appel la procédure d'alimentation de la base analytique pour permettre le lancement de celle-ci en fonction de l'id_patient selectionné sur l'interface.
+    #     charger_fait_nuit(id_patient)
+
+    # #     st.success("La base analytique a été alimentée avec succès.")
 
     #Création du bouton de téléchargement de document pdf
         st.download_button(

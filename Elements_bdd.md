@@ -248,6 +248,8 @@ IN p_id_patient INT
 BEGIN 
  SELECT
  id_patient,
+ iah
+ severite_iah,
  resultat_nuit.spo2_min, 
  resultat_nuit.spo2_mediane, 
  resultat_nuit.spo2_moy, 
@@ -268,7 +270,7 @@ BEGIN
         WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
           AND evenement_respiratoire.type_evenement = 'apnée centrale'
     )* 100.0 / resultat_nuit.nb_apnees
-    END AS ptc_apnees_centrales 
+    END AS pct_apnees_centrales 
 
 FROM resultat_nuit
 LEFT JOIN nuit_etude

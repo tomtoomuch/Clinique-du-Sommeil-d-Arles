@@ -156,4 +156,108 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
            v_nb_hypopnees AS hypopnees,
            v_nb_microeveils AS microeveils,
            ROUND((v_nb_apnees + v_nb_hypopnees) /(p_duree_sommeil_min/60), 2) AS iah;
+
+
+
+
+#appel des procedures avec EXEC
+cur.callproc('insert_data_resultat',(id_nuit, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, new_duree_hypoxie, position_dominante, decibels_max, decibels_moy, new_nb_ronflements_forts))
+cnx.commit()
+
+#procedure a mettre dans la bdd SQL
+#PROCEDURE insert_data_resultat :
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_data_resultat`(
+IN p_id_nuit INT,
+IN spo2_min DECIMAL (5,2),
+IN spo2_moy DECIMAL (5,2),
+IN spo2_mediane DECIMAL (5,2),
+IN nb_ronflements_forts INT,
+IN decibels_max DECIMAL (5,2),
+IN decibels_moy DECIMAL (5,2),
+IN position_dominante VARCHAR (20),
+IN duree_hypoxie_min INT
+)
+BEGIN
+INSERT INTO resultat_nuit(
+    id_nuit,
+    id_medecin_validateur,
+    date_validation,
+    iah,
+    spo2_min,
+    spo2_moy,
+    spo2_mediane,
+    nb_apnees,
+    nb_hypopnees,
+    nb_rera,
+    nb_microeveils,
+    duree_sommeil_min,
+    duree_hypoxie_min,
+    position_dominante,
+    duree_apnee_moy_sec,
+    duree_apnee_max_sec,
+    decibels_max,
+    decibels_moy,
+    nb_ronflements_forts
+)
+VALUES (
+    p_id_nuit,
+
+    (SELECT id_medecin
+     FROM nuit_etude
+     WHERE id_nuit = p_id_nuit),
+
+    CURDATE(),
+
+    (SELECT COUNT(*)
+    FROM evenement_respiratoire
+    WHERE id_nuit = p_id_nuit
+      AND type_evenement IN (
+          'apnée obstructive',
+          'apnée centrale',
+          'hypopnée')
+) / 7,
+
+    spo2_min,
+    spo2_moy,
+    spo2_mediane,
+
+    (SELECT COUNT(*)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit
+       AND type_evenement IN ('apnée obstructive','apnée centrale')),
+
+    (SELECT COUNT(*)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit
+       AND type_evenement = 'hypopnée'),
+
+    (SELECT COUNT(*)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit
+       AND type_evenement = 'RERA'),
+       
+	(SELECT COUNT(*)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit
+       AND type_evenement IN ('apnée obstructive','apnée centrale','RERA')),
+
+    420,
+
+    duree_hypoxie_min,
+
+    position_dominante,
+
+    (SELECT AVG(duree_sec)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit),
+
+    (SELECT MAX(duree_sec)
+     FROM evenement_respiratoire
+     WHERE id_nuit = p_id_nuit),
+
+    decibels_max,
+    decibels_moy,
+    nb_ronflements_forts
+);
 END

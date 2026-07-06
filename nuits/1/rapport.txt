@@ -5,45 +5,45 @@
   Clinique du Sommeil d'Arles
 ============================================================
 
-Patient          : Isabelle Vernet
-Nuit d'étude      : #2
-Date              : 2024-11-05
-Type d'examen     : polygraphie
-Médecin validateur: Dr Isabelle Faure
+Patient          : Bernard Tessier
+Nuit d'étude      : #1
+Date              : 2024-10-08
+Type d'examen     : polysomnographie
+Médecin validateur: Dr Laurent Garnier
 
 ------------------------------------------------------------
   RÉSUMÉ DE LA NUIT
 ------------------------------------------------------------
 
-Index Apnée-Hypopnée (IAH)      : 7.86 événements/heure
-Sévérité (calculée par la base)  : lÃ©ger
+Index Apnée-Hypopnée (IAH)      : 0.0 événements/heure
+Sévérité (calculée par la base)  : normal
 
-SpO2 minimale                    : 87.80 %
-SpO2 moyenne                     : 96.80 %
-SpO2 médiane                     : 97.00 %
-Durée totale d'hypoxie           : 3 minutes
+SpO2 minimale                    : 73.60 %
+SpO2 moyenne                     : 89.80 %
+SpO2 médiane                     : 94.00 %
+Durée totale d'hypoxie           : 156 minutes
 
-Nombre d'apnées                  : 0
-Nombre d'hypopnées               : 55
-Nombre de RERA                   : 8
-Nombre de micro-éveils estimé    : 63
+Nombre d'apnées                  : 237
+Nombre d'hypopnées               : 32
+Nombre de RERA                   : 12
+Nombre de micro-éveils estimé    : 12
 
-Durée apnée moyenne              : 19 secondes
-Durée apnée maximale             : 25 secondes
+Durée apnée moyenne              : 44 secondes
+Durée apnée maximale             : 65 secondes
 
-Position dominante                : laterale
-Intensité ronflements (max)       : 60.90 dB
-Intensité ronflements (moy)       : 38.90 dB
-Ronflements forts (>70dB)         : 0
+Position dominante                : dorsale
+Intensité ronflements (max)       : 79.00 dB
+Intensité ronflements (moy)       : 64.60 dB
+Ronflements forts (>70dB)         : 1133
 
 ------------------------------------------------------------
   DIAGNOSTIC
 ------------------------------------------------------------
 
-SAHOS léger
+SAHOS sévère
 
 Commentaire médical :
-lnll
+jjjjj
 
 ------------------------------------------------------------
   COURBES JOINTES

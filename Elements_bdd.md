@@ -16,6 +16,26 @@
    - peut accéder à la vue **vue_infirmier_medecins_validateurs** 
    - peut accéder à la table **résultats_nuit** _(SELECT, UPDATE)_. L'infirmier(ère) superviseur(euse) peut saisir un  commentaire. Il choisit également le nom du médecin en service afin de l'assigner aux résultats en tant que médecin validateur.
 
+# CREATION TABLE
+
+## Table RH
+
+```bash
+CREATE TABLE `rh` (
+  `id_personnel` int NOT NULL,
+  `fonction` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id_personnel`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+```
+## Remplir table RH
+```bash
+INSERT INTO `clinic`.`rh` (`id_personnel`, `fonction`) VALUES ('16', 'Directrice RH');
+
+```
+## Ajout RH au personnel
+```bash
+INSERT INTO `clinic`.`personnel` (`id_personnel`, `nom`, `prenom`, `date_embauche`, `telephone`, `email`, `actif`, `password`) VALUES ('16', 'Dumont', 'Christine', '2022-07-05', '0612135689', 'christine.dumont@clinique-sommeil-arles.fr', '1', 'azerty');
+```
 
 # LES VUES
 
@@ -23,6 +43,7 @@
 Cette vue a été crée pour permettre au **médecin** de voir rapidement le suivi médical du patient au sein de la clinique.
 
 ```bash
+CREATE VIEW `historique_patient` AS
 SELECT
     patient.nom,
     patient.prenom,
@@ -116,6 +137,21 @@ VIEW `nuitsommeilfase2`.`vue_medecin_consultation_prescription` AS
 ```
 
 # PROCEDURES STOCKEES
+## Procédure pour lire l'id_patient et l'id_suivi depuis la table suivi_patient
+
+Cette procédure reçoit l'id_patient en paramètre et retourne l'id suivi ainsi que l'id_suivi le plus proche
+
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_lire_suivi_patient`(
+	IN p_id_patient INT
+)
+BEGIN
+	SELECT id_suivi, id_patient
+    FROM suivi_patient
+    WHERE id_patient = p_id_patient;
+END
+```
+
 ## Procedure pour inscrire les données dans la table résultat nuit.
 
 Cette procédure a été modifié pour recevoir **l'ID du médecin validateur**.
@@ -150,11 +186,12 @@ BEGIN
         WHEN LOWER(p_position_dominante) LIKE '%vent%' THEN 'ventrale'
         ELSE 'mixte'
     END;
-
+	
+        
     -- Récupération complète depuis evenement_respiratoire
 SELECT
-    COUNT(CASE WHEN type_evenement LIKE '%apnee%' THEN 1 END),
-    COUNT(CASE WHEN type_evenement = 'hypopnee' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%apn%' THEN 1 END),
+    COUNT(CASE WHEN type_evenement LIKE '%hypo%' THEN 1 END),
     COUNT(CASE WHEN type_evenement = 'RERA' THEN 1 END),
     ROUND(AVG(duree_sec), 0),
     MAX(duree_sec)
@@ -163,9 +200,9 @@ FROM evenement_respiratoire
 WHERE id_nuit = p_id_nuit;
 
 -- AJOUT NÃ‰CESSAIRE : extrapolation 2h a 7h (Ã—3.5)
--- SET v_nb_apnees    = ROUND(v_nb_apnees * 3.5);
--- SET v_nb_hypopnees = ROUND(v_nb_hypopnees * 3.5);
--- SET v_nb_rera        = ROUND(v_nb_rera * 3.5);
+SET v_nb_apnees    = ROUND(v_nb_apnees);
+SET v_nb_hypopnees = ROUND(v_nb_hypopnees);
+SET v_nb_rera        = ROUND(v_nb_rera);
 
 -- Micro-Ã©veils : maintenant calcule depuis les valeurs deja  extrapolees
 SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
@@ -208,7 +245,8 @@ SET v_nb_microeveils = v_nb_apnees + v_nb_hypopnees + v_nb_rera;
         duree_apnee_max_sec = VALUES(duree_apnee_max_sec),
         iah = VALUES(iah),
         duree_sommeil_min = VALUES(duree_sommeil_min),
-        date_validation = CURDATE();
+        date_validation = CURDATE(),
+        commentaire_medical = VALUES(commentaire_medical);
 
     SELECT 'OK' AS status,
            v_nb_apnees AS apnees,
@@ -236,5 +274,45 @@ BEGIN
     LEFT JOIN comorbidite
         ON patient_comorbidite.id_comorbidite = comorbidite.id_comorbidite
     WHERE patient.nom = p_nomPatient;
+END
+
+```
+## Procedure pour alimenter la table fait_nuit dans la base_analytique depuis MYSQL
+Cette procédure permets de récupérer sur l'ETL les éléments de la table resultat_nuit de la table MSQL pour pouvoir alimenter la table fat_nuit de la base analytique.
+
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `recuperation_donnees_pour_faits_nuit_base_analytique`(
+IN p_id_patient INT
+)
+BEGIN 
+ SELECT
+ id_patient,
+ resultat_nuit.spo2_min, 
+ resultat_nuit.spo2_mediane, 
+ resultat_nuit.spo2_moy, 
+ resultat_nuit.nb_apnees,
+ resultat_nuit.nb_hypopnees,
+ resultat_nuit.nb_rera,
+ resultat_nuit.nb_microeveils,
+ resultat_nuit.duree_sommeil_min,
+ resultat_nuit.duree_hypoxie_min,
+ resultat_nuit.position_dominante, 
+ resultat_nuit.decibels_max, 
+ resultat_nuit.decibels_moy,  
+ resultat_nuit.nb_ronflements_forts,  
+ CASE
+    WHEN resultat_nuit.nb_apnees = 0 THEN 0
+    ELSE (SELECT COUNT(*)
+        FROM evenement_respiratoire
+        WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
+          AND evenement_respiratoire.type_evenement = 'apnée centrale'
+    )* 100.0 / resultat_nuit.nb_apnees
+    END AS ptc_apnees_centrales 
+
+FROM resultat_nuit
+LEFT JOIN nuit_etude
+    ON resultat_nuit.id_nuit = nuit_etude.id_nuit
+WHERE p_id_patient;
+
 END
 ```

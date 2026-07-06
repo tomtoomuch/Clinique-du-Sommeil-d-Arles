@@ -134,75 +134,6 @@ def calculer_alerte_iah_residuel(iah_residuel):
     else:
         return 0
 
-
-
-def calculer_colonnes_dim_temps(df):
-    date_jour = []
-    for row in df["date_jour"]:
-        date_jour.append(row)
-    #print(date_jour)
-    
-    df_date_jour = pd.DataFrame(columns = ["id_temps","date_complete","annee","mois","jour","trimestre","jour_semaine","est_weekend"])
-    #print(df_date_jour)
-
-    for date in date_jour:
-        id_temps = date
-        date_texte = str(date)
-        date_texte_liste = list(date_texte)
-        annee = "".join(date_texte_liste[0:4])
-        mois = "".join(date_texte_liste[4:6])
-        jour = "".join(date_texte_liste[6:])
-        date_complete = f"{annee}-{mois}-{jour}"
-        annee = int(annee)
-        mois = int(mois)
-        jour = int(jour)
-        jour_date = date(annee, mois, jour)
-        print(date_complete)
-
-        if (mois < 4):
-            trimestre = 1
-        elif (mois > 3 and mois < 7):
-            trimestre = 2
-        elif (mois > 6 and mois < 10):
-            trimestre = 3
-        else:
-            trimestre = 4
-        
-        est_weekend = 0
-
-        match(jour_date.weekday()):
-            case 0:
-                jour_semaine = "Lundi"
-            case 1:
-                jour_semaine = "Mardi"
-            case 2:
-                jour_semaine = "Mercredi"
-            case 3:
-                jour_semaine = "Jeudi"
-            case 4:
-                jour_semaine = "Vendredi"
-            case 5:
-                jour_semaine = "Samedi"
-                est_weekend = 1
-            case 6:
-                jour_semaine = "Dimanche"
-                est_weekend = 1
-        
-        print(df_date_jour)
-        print("=" *60)
-        
-        for col in df_date_jour:
-            print(df_date_jour["id_temps"],df_date_jour["date_complete"],df_date_jour["annee"],df_date_jour["mois"],df_date_jour["jour"])
-            print(date)
-            print(date_jour)
-            print(col)
-            print(df_date_jour)
-            print("="*60)
-
-            
-
-
-
 # ============================================================
 # 3) LOAD : base analytique SQLite
 # ============================================================
@@ -331,41 +262,6 @@ def lire_suivi_patient(id_patient):
 
     return id_suivi_le_plus_proche
 
-
-def initialiser_dim_temps(chemin_db=DB_PATH):
-    """Crée la table dim_temps si elle n'existe pas."""
-    connexion = sqlite3.connect(chemin_db)
-    connexion.execute("""
-         CREATE TABLE IF NOT EXISTS dim_temps (
-    id_temps        INTEGER PRIMARY KEY,   -- format AAAAMMJJ, ex: 20240315
-    date_complete   TEXT NOT NULL,         -- '2024-03-15'
-    annee           INTEGER NOT NULL,
-    mois            INTEGER NOT NULL,
-    jour            INTEGER NOT NULL,
-    trimestre       INTEGER NOT NULL,
-    jour_semaine    TEXT NOT NULL,         -- 'lundi', 'mardi', ...
-    est_weekend     INTEGER NOT NULL DEFAULT 0  -- 0/1
-    )
-    """)
-    
-    connexion.commit()
-    connexion.close()
-
-def alimenter_dim_temps(df, chemin_db=DB_PATH):
-   
-    connexion = sqlite3.connect(chemin_db)
-
-    
-    
- 
-   
-    
-    
-    
-       
-
-    
-
 #=============================================================
 # ORCHESTRATION : pipeline complet
 #=============================================================
@@ -394,19 +290,16 @@ def executer_pipeline(id_patient):
         print(f"  {len(df)} lignes lues")
 
 #--- TRANSFORM ---
-        calculer_colonnes_dim_temps(df)
-        print("\n[2/6] Calcul des alertes et des données pour la dimension temps...")
+        
+        print("\n[2/6] Calcul des alertes d'observance et iah...")
         
 
 
 
 
 #--- LOAD : db ---
-        print("\n[3/6] Initialisation de la table dim_temps...")
-        initialiser_dim_temps()
-        print("\n[4/6] Alimentation de la table dim_temps...")
-        
-        
+        print("\n[3/6] Initialisation et alimentation de la faits_suivi_cpap_jour...")
+                
         initialiser_database()
 
         for row in df.itertuples(index=False):

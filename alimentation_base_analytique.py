@@ -4,9 +4,12 @@ import shutil
 import sqlite3
 import mysql.connector
 import pandas as pd
+import warnings
 from datetime import datetime, timedelta
 
 from mdp import motdepasse, bdd, port
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 conexion = mysql.connector.connect(
     host="localhost",

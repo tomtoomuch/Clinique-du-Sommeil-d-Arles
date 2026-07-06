@@ -5,6 +5,7 @@ mdp.py
 mdp.js
 datalake.db
 base_analytique.db
+base_analytique.db.sql
 raw/**
 nuits/**
 models/**

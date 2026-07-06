@@ -1,9 +1,15 @@
+import os
+import sys
+import shutil
 import sqlite3
 import mysql.connector
 import pandas as pd
+import warnings
 from datetime import datetime, timedelta
 
 from mdp import motdepasse, bdd, port
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 conexion = mysql.connector.connect(
     host="localhost",
@@ -11,7 +17,6 @@ conexion = mysql.connector.connect(
     password=motdepasse,
     database=bdd,
     port=port,
-    use_pure=True
 )
 
 cur_mysql = conexion.cursor(dictionary=True)
@@ -23,43 +28,55 @@ cursor_sqlite = conexion_sqlite.cursor()
 # Alimentation de la table dim_temps dans la base_analytique (SQLit)
 # =============================================================
 
-# Dates de début et de fin
-date_debut = datetime(2020, 1, 1)
-date_fin = datetime(2027, 12, 31)
+def charger_dim_temps ():
+    # Dates de début et de fin
+    date_debut = datetime(2020, 1, 1)
+    date_fin = datetime(2027, 12, 31)
 
-# Initialisation
-date_courante = date_debut
+    # Initialisation
+    date_courante = date_debut
 
-# Jours de la semaine
-jours = [
-    "lundi",
-    "mardi",
-    "mercredi",
-    "jeudi",
-    "vendredi",
-    "samedi",
-    "dimanche"
-]
+    # Jours de la semaine
+    jours = [
+        "lundi",
+        "mardi",
+        "mercredi",
+        "jeudi",
+        "vendredi",
+        "samedi",
+        "dimanche"
+    ]
 
-while date_courante <= date_fin:
+    while date_courante <= date_fin:
 
-    id_temps = int(date_courante.strftime("%Y%m%d"))
-    date_complete = date_courante.strftime("%Y-%m-%d")
-    annee = date_courante.year
-    mois = date_courante.month
-    jour = date_courante.day
-    trimestre = (mois - 1) // 3 + 1
-    jour_semaine = jours[date_courante.weekday()]
-    est_weekend = 1 if date_courante.weekday() >= 5 else 0
+        id_temps = int(date_courante.strftime("%Y%m%d"))
+        date_complete = date_courante.strftime("%Y-%m-%d")
+        annee = date_courante.year
+        mois = date_courante.month
+        jour = date_courante.day
+        trimestre = (mois - 1) // 3 + 1
+        jour_semaine = jours[date_courante.weekday()]
+        est_weekend = 1 if date_courante.weekday() >= 5 else 0
 
-    cursor_sqlite.execute(
-        "SELECT 1 FROM dim_temps WHERE id_temps = ?",
-        (id_temps,)
-    )
+        cursor_sqlite.execute(
+            "SELECT 1 FROM dim_temps WHERE id_temps = ?",
+            (id_temps,)
+        )
 
-    if cursor_sqlite.fetchone() is None:
-        cursor_sqlite.execute("""
-            INSERT INTO dim_temps (
+        if cursor_sqlite.fetchone() is None:
+            cursor_sqlite.execute("""
+                INSERT INTO dim_temps (
+                    id_temps,
+                    date_complete,
+                    annee,
+                    mois,
+                    jour,
+                    trimestre,
+                    jour_semaine,
+                    est_weekend
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
                 id_temps,
                 date_complete,
                 annee,
@@ -68,22 +85,11 @@ while date_courante <= date_fin:
                 trimestre,
                 jour_semaine,
                 est_weekend
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            id_temps,
-            date_complete,
-            annee,
-            mois,
-            jour,
-            trimestre,
-            jour_semaine,
-            est_weekend
-        ))
+            ))
 
-    date_courante += timedelta(days=1)
+        date_courante += timedelta(days=1)
 
-print("Dimension temps mise à jour.")
+    # print("Dimension temps mise à jour.")
 
 # =============================================================
 # Alimentation de la table dim_patient dans la base_analytique (SQLit) depuis la base MySQL
@@ -99,7 +105,7 @@ def charger_dim_patient(id_patient):
         FROM patient
         WHERE id_patient = %s
     """
-    df = pd.read_sql(query, conexion, params=[id_patient])
+    df = pd.read_sql(query, conexion, params= [id_patient])
 
     if df.empty:
         print(f"Patient {id_patient} introuvable")
@@ -132,7 +138,7 @@ def charger_dim_patient(id_patient):
     print(f"Patient {id_patient} traité")
 
 
-charger_dim_patient(2)
+    # charger_dim_patient(id_patient)
 
 
 # =============================================================
@@ -148,7 +154,7 @@ def charger_fait_nuit(id_patient):
         print(f"Patient {id_patient} introuvable")
     else:
 
-        fila1= df.iloc[1]
+        fila1= df.iloc[id_patient]
         print("pct_apnees_centrales")
         
 
@@ -177,7 +183,71 @@ def charger_fait_nuit(id_patient):
             int(fila1["nb_ronflements_forts"]),
             float(fila1["pct_apnees_centrales"]),
         ))
-charger_fait_nuit(2)  
-conexion.close()
-conexion_sqlite.close()
+    # charger_fait_nuit(id_patient)  
+
+
+# ============================================================
+# ORCHESTRATION : pipeline complet
+# ============================================================
+def executer_pipeline(id_patient):
+    """
+    Orchestre le pipeline complet pour un patient donné.
+    
+    En cas d'erreur à n'importe quelle étape, le message est affiché
+    clairement sur stderr puis l'exception est relevée (utile pour
+    le débogage et pour qu'un script appelant sache que ça a échoué).
+    """
+    try:
+       
+        # --- Alimenter dim_temps ---
+        print("\n[1/3] alimenter_dim_temps")
+        charger_dim_temps()
+        # print(df)
+        # print(f"  {len(df)} dim_temps_mis_a_jour")
+       
+        # --- Alimenter dim_patient ---
+        print("\n[2/3] alimenter_dim_patient")
+        print(f"  Alimentation : Patient #{id_patient}")
+        charger_dim_patient(id_patient)
+    
+
+        # --- Alimenter fait_nuit ---
+        print("\n[3/3] alimenter_fait_nuit")
+        print(f"  Alimentation : fait_nuit #{id_patient}")
+        charger_fait_nuit(id_patient)
+
+        print(f"\n✓ Pipeline terminé : Patient #{id_patient}\n")
+       
+
+    except Exception as erreur:
+        print(
+            f"\n✗ ERREUR dans le pipeline pour id_patient={id_patient} : {erreur}",
+            file=sys.stderr
+        )
+        raise
+   
+
+# ============================================================
+# POINT D'ENTRÉE
+# ============================================================
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage : python alimentation_base_analytique.py <id_patient>")
+        print("Exemple : alimentation_base_analytique.py 1")
+        sys.exit(1)
+
+    try:
+        id_patient_arg = int(sys.argv[1])
+    except ValueError:
+        print("Erreur : id_patient doivent être des nombres entiers.", file=sys.stderr)
+        sys.exit(1)
+   
+    try:
+        executer_pipeline(id_patient_arg)
+    finally :
+        conexion.close()
+        conexion_sqlite.close()
+    # except Exception as erreur:
+    #     print(f"Erreur fatale : {erreur}", file=sys.stderr)
+    #     sys.exit(1)
 

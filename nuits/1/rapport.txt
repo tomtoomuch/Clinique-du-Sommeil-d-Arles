@@ -1,6 +1,7 @@
 
+
 ============================================================
-  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE
+  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE  
   Clinique du Sommeil d'Arles
 ============================================================
 
@@ -14,8 +15,8 @@ Médecin validateur: Dr Laurent Garnier
   RÉSUMÉ DE LA NUIT
 ------------------------------------------------------------
 
-Index Apnée-Hypopnée (IAH)      : 38.43 événements/heure
-Sévérité (calculée par la base)  : sÃ©vÃ¨re
+Index Apnée-Hypopnée (IAH)      : 0.0 événements/heure
+Sévérité (calculée par la base)  : normal
 
 SpO2 minimale                    : 73.60 %
 SpO2 moyenne                     : 89.80 %
@@ -25,7 +26,7 @@ Durée totale d'hypoxie           : 156 minutes
 Nombre d'apnées                  : 237
 Nombre d'hypopnées               : 32
 Nombre de RERA                   : 12
-Nombre de micro-éveils estimé    : 281
+Nombre de micro-éveils estimé    : 12
 
 Durée apnée moyenne              : 44 secondes
 Durée apnée maximale             : 65 secondes
@@ -42,7 +43,7 @@ Ronflements forts (>70dB)         : 1133
 SAHOS sévère
 
 Commentaire médical :
-dbfdfsb
+jjjjj
 
 ------------------------------------------------------------
   COURBES JOINTES
@@ -54,5 +55,5 @@ dbfdfsb
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
-  Validé le 2026-07-02 par Dr Garnier.
+  Validé le 2026-06-26 par Dr Faure.
 ============================================================

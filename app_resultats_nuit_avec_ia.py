@@ -7,6 +7,10 @@ import pandas as pd
 from pathlib import Path
 import mysql.connector
 from datetime import datetime
+from fpdf import FPDF
+from mdp import motdepasse, bdd, port
+from genericpath import exists
+import os
 
 # Import du module IA
 from ia_comorbidites import get_comorbidite_probable, afficher_prediction_comorbidites
@@ -19,8 +23,9 @@ st.markdown("**Clinique du Sommeil d'Arles**")
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "root",
-    "database": "cliniquev3"
+    "password": motdepasse,
+    "database": bdd,
+    "port": port
 }
 
 NUITS_DIR = Path("nuits")
@@ -43,6 +48,7 @@ def get_liste_nuits():
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         df = pd.read_sql("""
+
             SELECT n.id_nuit, p.id_patient, p.nom, p.prenom, n.date_nuit, r.iah, r.severite_iah
             FROM nuit_etude n
             JOIN patient p ON p.id_patient = n.id_patient
@@ -129,13 +135,24 @@ if not df_liste.empty:
             # SECTIONS EXISTANTES
             # =============================================================
             rapport_path = NUITS_DIR / str(selected_id) / "rapport.txt"
+
+ # Création d'un espace commentaire médical pour la validation du rapport par le médecin 
+            st.text("Commentaire validation médical")
+            commentaire= st.text_area("")
+
             if rapport_path.exists():
                 st.subheader(" Rapport médical complet")
                 st.text_area("", rapport_path.read_text(encoding="utf-8"), height=450)
+                
             else:
                 st.warning(f"Rapport non trouvé pour la nuit {selected_id}")
 
+# Encodage du rapport pour l'utilisation dans le pdf
+            with open(rapport_path, "r", encoding="utf-8") as f:
+                texte = f.read()
+
             st.subheader(" Courbes de la nuit")
+            
             nuit_dir = NUITS_DIR / str(selected_id)
             col1, col2, col3 = st.columns(3)
             for col, img, title in zip([col1,col2,col3],
@@ -153,3 +170,64 @@ else:
     st.warning("Aucune nuit trouvée dans la base.")
 
 st.sidebar.caption(f"Actualisé : {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+
+
+# =============================================================
+# CREATION DES BOUTONS : VALIDER ET TELECHARGER
+# =============================================================
+
+#Création du premier bouton "valider"
+st.header('Valider le rapport')
+button1 = st.button('Valider')
+
+# Le bouton valider ne permets de sauvegarder le pdf et d'afficher le deuxième bouton, que si le médecin a écrit un commentaire.
+if button1: 
+    if commentaire != "":
+        pdf = FPDF('P', 'mm', 'A4')
+
+    #première page : rapport de la nuit
+        pdf.add_page()
+        pdf.set_font(family='Times', size=12)
+        pdf.set_font("helvetica", size=14)
+        pdf.multi_cell(0, 8, texte)
+        pdf.cell(40, 10, "COMMENTAIRE VALIDATION MEDICAL", ln=True)
+        pdf.multi_cell(0, 8, commentaire)
+    
+    
+    #seconde page : graph SPO2
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "spo2.png"), x=10, y=20, w=180)
+    #troisième page : graph debit_nasal
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "debit_nasal.png"), x=10, y=20, w=180)
+    #quatrième page : graph ronflement
+        pdf.add_page()
+        pdf.image(str(nuit_dir / "ronflements.png"), x=10, y=20, w=180)
+
+    # Création du dossier patient
+        folder = Path("patient")
+        folder.mkdir(exist_ok=True)
+
+    # Importation du pdf dans le nouveau dossier patient, en fonction de son ID
+        pdf_path = folder / f"rapport_valide_patient_{selected_patient_id}.pdf"
+
+        pdf.output(str(pdf_path))
+
+        pdf_bytes = pdf.output(dest="S").encode("latin1")
+
+    #Création du bouton de téléchargement de document pdf
+        st.download_button(
+        "Télécharger PDF",
+        data=pdf_bytes,
+        file_name = f"rapport_valide_patient_{selected_patient_id}.pdf", 
+        mime="application/pdf"
+        )
+
+    else:  
+        st.warning("Renseigner commentaire")
+
+    
+    
+   
+
+

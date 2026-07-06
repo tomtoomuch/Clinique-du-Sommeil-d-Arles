@@ -141,38 +141,40 @@ charger_dim_patient(1)
 
 def charger_fait_nuit(id_patient):
 
-    p_id_patient= int(1)
+    df = pd.read_sql("call nuitsommeil2.recuperation_donnees_pour_faits_nuit_base_analytique(%s)", conexion, params=[id_patient])
 
-    cur_mysql.callproc('recuperation_donnees_pour_faits_nuit_base_analytique',[p_id_patient])
+    if df.empty:
+        print(f"Patient {id_patient} introuvable")
+    else:
+        fila1= df.iloc[0]
+        print(fila1)
+        
 
-    confirmation = None
-    for result in cur_mysql.stored_results(): 
-        confirmation= result.fetchone()
-    print(confirmation)
+    cursor_sqlite.execute(
+        """INSERT OR IGNORE INTO fait_nuits
+           (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+    duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+         (
+            int(fila1["iah"]),
+            str(fila1["severite_iah"]),
+            float(fila1["spo2_min"]),
+            float(fila1["spo2_moy"]),
+            float(fila1["spo2_mediane"]),
+            int(fila1["nb_apnees"]),
+            int(fila1["nb_hypopnees"]),
+            int(fila1["nb_rera"]),
+            int(fila1["nb_microeveils"]),
+            int(fila1["duree_sommeil_min"]),
+            float(fila1["duree_hypoxie_min"]),
+            str(fila1["position_dominante"]),
+            float(fila1["decibels_max"]),
+            float(fila1["decibels_moy"]),
+            int(fila1["nb_ronflements_forts"]),
+            float(fila1["pct_apnees_centrales"]),
+        ))
 
-    return confirmation
-
-    
-
-
-# if df1.empty:
-#     print(f"Patient {p_id_patient} introuvable")
-    
-# fila = df.iloc[0]
-# print(fila)
-
-
-
-# # cursor_sqlite.execute(
-# #         """INSERT OR IGNORE INTO fait_nuits
-# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
-# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
-# #            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-# #            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
-# #     duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
-
-
-
+charger_fait_nuit(1)
 conexion.close()
 conexion_sqlite.close()
 

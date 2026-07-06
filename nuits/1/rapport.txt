@@ -1,6 +1,7 @@
 
+
 ============================================================
-  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE
+  RAPPORT D'ANALYSE POLYSOMNOGRAPHIQUE  
   Clinique du Sommeil d'Arles
 ============================================================
 
@@ -14,7 +15,7 @@ Médecin validateur: Dr Isabelle Faure
   RÉSUMÉ DE LA NUIT
 ------------------------------------------------------------
 
-Index Apnée-Hypopnée (IAH)      : 0.0 événements/heure
+Index Apnée-Hypopnée (IAH)      : 4.57 événements/heure
 Sévérité (calculée par la base)  : normal
 
 SpO2 minimale                    : 73.60 %
@@ -22,10 +23,10 @@ SpO2 moyenne                     : 89.80 %
 SpO2 médiane                     : 94.00 %
 Durée totale d'hypoxie           : 156 minutes
 
-Nombre d'apnées                  : 0
-Nombre d'hypopnées               : 0
+Nombre d'apnées                  : 237
+Nombre d'hypopnées               : 32
 Nombre de RERA                   : 12
-Nombre de micro-éveils estimé    : 12
+Nombre de micro-éveils estimé    : 44
 
 Durée apnée moyenne              : 44 secondes
 Durée apnée maximale             : 65 secondes
@@ -54,5 +55,5 @@ Commentaire médical :
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
-  Validé le 2026-06-26 par Dr Faure.
+  Validé le 2026-07-02 par Dr Faure.
 ============================================================

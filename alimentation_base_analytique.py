@@ -132,7 +132,7 @@ def charger_dim_patient(id_patient):
     print(f"Patient {id_patient} traité")
 
 
-charger_dim_patient(1)
+charger_dim_patient(2)
 
 
 # =============================================================
@@ -141,22 +141,26 @@ charger_dim_patient(1)
 
 def charger_fait_nuit(id_patient):
 
-    df = pd.read_sql("call nuitsommeil2.recuperation_donnees_pour_faits_nuit_base_analytique(%s)", conexion, params=[id_patient])
+    print([id_patient])
+    df = pd.read_sql("call cliniquesommeil2.recuperation_donnees_pour_faits_nuit_base_analytique(%s)", conexion, params=[id_patient])
 
     if df.empty:
         print(f"Patient {id_patient} introuvable")
     else:
-        fila1= df.iloc[0]
-        print(fila1)
+
+        fila1= df.iloc[1]
+        print("pct_apnees_centrales")
         
 
+
+
     cursor_sqlite.execute(
-        """INSERT OR IGNORE INTO fait_nuits
-           (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
-    duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-         (
-            int(fila1["iah"]),
+        """INSERT OR IGNORE INTO faits_nuits
+            (iah, severite_iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils,duree_sommeil_min,
+            duree_hypoxie_min, position_dominante, decibels_max, decibels_moy, nb_ronflements_forts, pct_apnees_centrales)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            float(fila1["iah"]),
             str(fila1["severite_iah"]),
             float(fila1["spo2_min"]),
             float(fila1["spo2_moy"]),
@@ -173,8 +177,7 @@ def charger_fait_nuit(id_patient):
             int(fila1["nb_ronflements_forts"]),
             float(fila1["pct_apnees_centrales"]),
         ))
-
-charger_fait_nuit(1)
+charger_fait_nuit(2)  
 conexion.close()
 conexion_sqlite.close()
 

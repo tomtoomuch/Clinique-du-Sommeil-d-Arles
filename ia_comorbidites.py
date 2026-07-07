@@ -36,7 +36,8 @@ MYSQL_CONFIG = {
     "user": "root",
     "password": motdepasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    "use_pure" : True
 }
 
 SQLITE_PATH = Path("base_analytique.db")

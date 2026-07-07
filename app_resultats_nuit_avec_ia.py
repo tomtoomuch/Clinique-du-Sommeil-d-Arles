@@ -27,7 +27,8 @@ DB_CONFIG = {
     "user": "root",
     "password": motdepasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    "use_pure" : True
 }
 
 NUITS_DIR = Path("nuits")

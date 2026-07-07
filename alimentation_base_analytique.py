@@ -19,6 +19,7 @@ def get_mysql_connection():
         password=motdepasse,
         database=bdd,
         port=port,
+        use_pure = True
     )
 def charger_dim_temps (conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()

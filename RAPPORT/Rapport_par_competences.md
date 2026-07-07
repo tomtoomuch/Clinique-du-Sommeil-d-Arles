@@ -29,33 +29,167 @@ C15. **Concevoir le cadre technique d'une application integrant un service d'int
 
 C16. **Coordonner la réalisation technique d'une application d'intelligence artificielle** en s'intégrant dans une conduite agile du projet et en contexte MLOps et en facilitant les temps de collaboration dans le but d'atteindre les objectifs de production et de qualité.
 
-Afin de mener à bien les objectifs fixés, nous avons, à la suite d'une séance de brainstorming, mis en place un tableau Trello et réparti les différentes tâches en fonction des souhaits, des compétences et des aspirations de chacun. (https://trello.com/b/Vuckm2dk).
+```
+
+Afin de mener à bien les objectifs fixés, nous avons, suite à une lecture attentive du brief et à la suite d'une séance de brainstorming, identifié les différentes taches, sous-taches et compétences requises et avons mis en place un tableau Trello en fonction des souhaits, des compétences et des aspirations de chacun. (https://trello.com/b/Vuckm2dk).
+
+```
+![Vue Trello du groupe](./img/Trello.png "Vue Trello de la répartition des taches")
+
+```
+
+Nous avons également utilisé Git et Github afin de sauvegarder nos codes, de conserver un historique des modifications, en respectant les règles de contributions mises en place :
+
+```
+
+![Vue Contributing](./img/contributiong.png "Vue Contributing")
+
+
 
 
 C17. **Développer les composants techniques et les interfaces d'une application** en utilisant les outils et langages de programmation adaptés et en respectant les spécifications fonctionnelles et techniques, les standards et normes d'accessibilité, de sécurité et de gestion des données en vigeur dans le but de répondre aux besoins fonctionnels identifiés.
 
+```
 
 Pour mener à bien ces taches, nous avons utilisé :
- 
+
  - Des dépots Github permettant un versionnement des sources (Pour le frontEnd : https://github.com/arcar/CliniquePlus---Prototype-d-interface-utilisateur.git, pour le Back-End : https://github.com/tomtoomuch/Clinique-du-Sommeil-d-Arles.git)
 
  - Pour la partie Front-End : 
     ANGULAR composée d'une page d'accueil, d'une page de connexion qui permet l'authentification des utilisateurs et de les répartir en 3 catégories ( Infirmiers, Médecins, RH). 
     En fonction de la catégorie authentifiée, le composant header affiche des éléments différents qui sont:
 
-        - pour les médecins : un lien "dashboard" qui permet d'ouvrir un onglet affichant les rendus générés  via streamlit par le fichier dashboard_cpap.py, un lien "rapport nuit" qui permet d'ouvrir un onglet affichant les rendus générés via streamlit par le fichier app_resultats_nuit_avec_ia.py
+    - pour les médecins : un lien "dashboard" qui permet d'ouvrir un onglet affichant les rendus générés  via streamlit par le fichier dashboard_cpap.py, un lien "rapport nuit" qui permet d'ouvrir un onglet affichant les rendus générés via streamlit par le fichier app_resultats_nuit_avec_ia.py
 
-        - pour les rh : un lien qui permet d'ouvrir un nouveau composant rendant possible la sélection d'un employé afin d'en afficher le profil et d'en modifier les éléments (nom, prenom, email, telephone, actif)
-        
-        - pour les infirmiers : un lien "analyse nuit" qui ouvre un composant permettant de choisir la nuit à analyser, de choisir le médecin validateur, de rentrer un commentaire médical et de valider, lançant ainsi l'ETL1 avec ces 3 composants obligatoires; un lien "suivi cpap jour" qui ouvre un composant permettant de choisir le patient qui aura ses relevés cpap jour analysés et de valider en lançant l'ETL2.
+    - pour les rh : un lien qui permet d'ouvrir un nouveau composant rendant possible la sélection d'un employé afin d'en afficher le profil et d'en modifier les éléments (nom, prenom, email, telephone, actif)
 
+    - pour les infirmiers : un lien "analyse nuit" qui ouvre un composant permettant de choisir la nuit à analyser, de choisir le médecin validateur, de rentrer un commentaire médical et de valider, lançant ainsi l'ETL1 avec ces 3 composants obligatoires; un lien "suivi cpap jour" qui ouvre un composant permettant de choisir le patient qui aura ses relevés cpap jour analysés et de valider en lançant l'ETL2.
+```
+![Angular](./img/angular.png "Vue Angular CliniquePlus")
+
+```
+
+Pour le composant permettant la selection d'une nuit, d'un médecin validateur et l'ajout d'un commentaire médical et le lancement de l'ETL, voici la méthode :
+
+```
+```ts
+
+// Déclarations des interfaces qui servent à décrire la forme que doivent avoir les différents objets
+
+interface Nuit {
+  id_nuit: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  nuitsTrouvees: Nuit[];
+}
+
+interface Medecin {
+  id_personnel: number;
+  nom: string;
+  prenom: string;
+  specialite: string;
+  numero_rpps: string;
+  date_embauche: string;
+  telephone: string;
+  email: string;
+  actif: number;
+  password: string;
+}
+
+
+```
+```ts
+export class AnalyseNuit implements OnInit {
+
+  commentForm: FormGroup;  // Déclaration du formulaire
+
+  nuits: Nuit[] = [];       //déclaration d'une variable nuits qui est un tableau nommé Nuit vide au démarrage du composant
+  docs: Medecin[] = [];
+
+  loadingNuits = false;
+  loadingMedecins = false;
+```
+```ts
+  this.commentForm = this.fb.group({        //Création de la structure du formulaire
+      selectedNuit: [null, Validators.required],          //Attend qu'une nuit soit selectionnée pour que le champ du formulaire soit validé
+      selectedMedecin: [null, Validators.required],     //Attend qu'un médecin soit selectionné pour que le champ du formulaire soit validé
+      comment: ['', [Validators.required, Validators.minLength(3)]]     //Attend qu'un commentaire de plus de 3 lettres soit rentré pour que le champ soit validé
+    });
+
+```
+```ts
+ngOnInit(): void {          //Fonctions qui seront exécutées dès le chargement du composant pour récupérer la liste des nuits et des medecins disponibles
+    console.log('INIT AnalyseNuit');
+    this.loadNuits();
+    this.loadMedecins();
+  }
+```
+```ts
+ loadMedecins() {       //Fonction qui charge la liste des médecins depuis l'API
+    this.loadingMedecins = true;    // Pour affichage HTML de l'état du chargement
+
+    this.routes.listeMedecins().subscribe({    // Appel de l'API via le service "routes" et subscribe permet de récuperer la réponse quand elle arrive
+      next: (response: any) => {  // réponse quand l'API répond correctement
+
+        this.docs = response.medecin ?? []; // stockage de la réponse dans le tableau "docs" et si pas de valeur, tableau vide (??[])
+
+        this.loadingMedecins = false;
+
+        this.cdr.detectChanges(); //detecte les changements pour mettre a jour le HTML
+
+        console.log('loaded medecins:', this.docs);
+      },
+      error: (err) => {     //En cas d'erreur
+        console.error(err);
+        this.loadingMedecins = false;
+      }
+    });
+  }
+```
+```ts
+ submit() {
+
+    if (this.commentForm.invalid) return;  //ici on verifie si le formulaire est valide et si non, on arrête
+
+    const { selectedNuit, selectedMedecin, comment } = this.commentForm.value;  //On récupère les valeurs du formulaire
+
+    if (!selectedNuit || !selectedMedecin) { //On verifie à nouveau que les champs ne sont pas vides sinon on arrête
+      alert("Sélection manquante.");
+      return;
+    }
+
+    this.routes.lancerETL1(     // Appel de l'API via le service "routes" avec les 3 parametres et subscribe permet de récuperer la réponse quand elle arrive
+      selectedNuit.id_nuit,
+      selectedMedecin.id_personnel,
+      comment
+    ).subscribe({
+      next: (res) => {  // si API répond correctement
+        console.log("ETL lancé :", res);
+          
+        // reset après réussite
+        this.commentForm.reset();
+      },
+      error: (err) => {     // si erreur
+        console.error("Erreur ETL :", err);
+        console.log(err.error);
+      }
+    });
+  }
+```
+
+```
 - Pour la partie Back-End : 
 
-        - Python pour le nettoyage des données, le calcul des indicateurs, la création du rapport médical, la génération des courbes, l'enregistrement des données dans un datalake, l'alimentation d'une base sqlite analytique
+    - Python pour le nettoyage des données, le calcul des indicateurs, la création du rapport médical, la génération des courbes, l'enregistrement des données dans un datalake, l'alimentation d'une base sqlite analytique
 
-        - JavaScript avec Express et NodeJs pour la création de l'API permettant l'utilisation de routes et requètes nécessaires à la communication entre le front et le back
+    - JavaScript avec Express et NodeJs pour la création de l'API permettant l'utilisation de routes et requètes nécessaires à la communication entre le front et le back
 
-        - Streamlit pour les résultats des nuits avec prédiction de comorbidités
+    - Streamlit pour les résultats des nuits avec prédiction de comorbidités
+
+```
 
 
 ## Ainsi que C8, C9 et C10 **si traité**

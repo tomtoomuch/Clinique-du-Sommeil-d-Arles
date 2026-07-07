@@ -327,3 +327,28 @@ BEGIN
     WHERE n.id_patient = p_id_patient;
 END
 ```
+
+## Procédure stockée pour l'insertion du suivi_cpap_jour dans la base MySQL
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_insertion_faits_suivi_cpap_jour`(
+    IN p_id_appareil INT,
+    IN p_date_jour DATE,
+    IN p_duree_utilisation_h DECIMAL(4,2),
+    IN p_iah_residuel DECIMAL(5,2),
+    IN p_fuites_l_min DECIMAL(6,2),
+    IN p_nb_evenements INT,
+    IN p_qualite_donnee VARCHAR(20)
+    )
+BEGIN
+	INSERT INTO suivi_cpap_jour (id_appareil,date_jour,duree_utilisation_h,iah_residuel,fuites_l_min,nb_evenements,qualite_donnee)
+    VALUES (
+        p_id_appareil,
+        p_date_jour,
+        p_duree_utilisation_h,
+        p_iah_residuel,
+        p_fuites_l_min,
+        p_nb_evenements,
+        p_qualite_donnee
+        );
+END
+```

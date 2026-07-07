@@ -282,40 +282,49 @@ Cette procédure permets de récupérer sur l'ETL les éléments de la table res
 
 ```bash
 CREATE DEFINER=`root`@`localhost` PROCEDURE `recuperation_donnees_pour_faits_nuit_base_analytique`(
-IN p_id_patient INT
+    IN p_id_patient INT
 )
-BEGIN 
- SELECT
- id_patient,
- iah
- severite_iah,
- resultat_nuit.spo2_min, 
- resultat_nuit.spo2_mediane, 
- resultat_nuit.spo2_moy, 
- resultat_nuit.nb_apnees,
- resultat_nuit.nb_hypopnees,
- resultat_nuit.nb_rera,
- resultat_nuit.nb_microeveils,
- resultat_nuit.duree_sommeil_min,
- resultat_nuit.duree_hypoxie_min,
- resultat_nuit.position_dominante, 
- resultat_nuit.decibels_max, 
- resultat_nuit.decibels_moy,  
- resultat_nuit.nb_ronflements_forts,  
- CASE
-    WHEN resultat_nuit.nb_apnees = 0 THEN 0
-    ELSE (SELECT COUNT(*)
-        FROM evenement_respiratoire
-        WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
-          AND evenement_respiratoire.type_evenement = 'apnée centrale'
-    )* 100.0 / resultat_nuit.nb_apnees
-    END AS pct_apnees_centrales 
+BEGIN
+    SELECT
+        r.id_nuit,
+        n.id_patient,
+        CAST(DATE_FORMAT(n.date_nuit, '%Y%m%d') AS UNSIGNED) AS id_temps,
 
-FROM resultat_nuit
-LEFT JOIN nuit_etude
-    ON resultat_nuit.id_nuit = nuit_etude.id_nuit
-WHERE p_id_patient;
+        r.iah,
+        r.severite_iah,
+        r.spo2_min,
+        r.spo2_moy,
+        r.spo2_mediane,
+        r.nb_apnees,
+        r.nb_hypopnees,
+        r.nb_rera,
+        r.nb_microeveils,
+        r.duree_sommeil_min,
+        r.duree_hypoxie_min,
+        r.position_dominante,
+        r.decibels_max,
+        r.decibels_moy,
+        r.nb_ronflements_forts,
 
+        (
+            SELECT MAX(s.id_suivi)
+            FROM suivi_patient s
+            WHERE s.id_patient = n.id_patient
+        ) AS id_suivi_le_plus_proche,
+
+        CASE
+            WHEN r.nb_apnees = 0 THEN 0
+            ELSE (
+                SELECT COUNT(*)
+                FROM evenement_respiratoire e
+                WHERE e.id_nuit = r.id_nuit
+                  AND e.type_evenement = 'apnée centrale'
+            ) * 100.0 / r.nb_apnees
+        END AS pct_apnees_centrales
+
+    FROM resultat_nuit r
+    JOIN nuit_etude n ON r.id_nuit = n.id_nuit
+    WHERE n.id_patient = p_id_patient;
 END
 ```
 

@@ -14,7 +14,8 @@ MYSQL_CONFIG = {
     "user": "root",
     "password": motdepasse,
     "database": bdd,
-    "port": port
+    "port": port,
+    "use_pure" : True
 }
 
 DATALAKE_PATH = "datalake.db"

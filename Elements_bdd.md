@@ -282,39 +282,73 @@ Cette procédure permets de récupérer sur l'ETL les éléments de la table res
 
 ```bash
 CREATE DEFINER=`root`@`localhost` PROCEDURE `recuperation_donnees_pour_faits_nuit_base_analytique`(
-IN p_id_patient INT
+    IN p_id_patient INT
 )
-BEGIN 
- SELECT
- id_patient,
- iah
- severite_iah,
- resultat_nuit.spo2_min, 
- resultat_nuit.spo2_mediane, 
- resultat_nuit.spo2_moy, 
- resultat_nuit.nb_apnees,
- resultat_nuit.nb_hypopnees,
- resultat_nuit.nb_rera,
- resultat_nuit.nb_microeveils,
- resultat_nuit.duree_sommeil_min,
- resultat_nuit.duree_hypoxie_min,
- resultat_nuit.position_dominante, 
- resultat_nuit.decibels_max, 
- resultat_nuit.decibels_moy,  
- resultat_nuit.nb_ronflements_forts,  
- CASE
-    WHEN resultat_nuit.nb_apnees = 0 THEN 0
-    ELSE (SELECT COUNT(*)
-        FROM evenement_respiratoire
-        WHERE evenement_respiratoire.id_nuit = resultat_nuit.id_nuit
-          AND evenement_respiratoire.type_evenement = 'apnée centrale'
-    )* 100.0 / resultat_nuit.nb_apnees
-    END AS pct_apnees_centrales 
+BEGIN
+    SELECT
+        r.id_nuit,
+        n.id_patient,
+        CAST(DATE_FORMAT(n.date_nuit, '%Y%m%d') AS UNSIGNED) AS id_temps,
 
-FROM resultat_nuit
-LEFT JOIN nuit_etude
-    ON resultat_nuit.id_nuit = nuit_etude.id_nuit
-WHERE p_id_patient;
+        r.iah,
+        r.severite_iah,
+        r.spo2_min,
+        r.spo2_moy,
+        r.spo2_mediane,
+        r.nb_apnees,
+        r.nb_hypopnees,
+        r.nb_rera,
+        r.nb_microeveils,
+        r.duree_sommeil_min,
+        r.duree_hypoxie_min,
+        r.position_dominante,
+        r.decibels_max,
+        r.decibels_moy,
+        r.nb_ronflements_forts,
 
+        (
+            SELECT MAX(s.id_suivi)
+            FROM suivi_patient s
+            WHERE s.id_patient = n.id_patient
+        ) AS id_suivi_le_plus_proche,
+
+        CASE
+            WHEN r.nb_apnees = 0 THEN 0
+            ELSE (
+                SELECT COUNT(*)
+                FROM evenement_respiratoire e
+                WHERE e.id_nuit = r.id_nuit
+                  AND e.type_evenement = 'apnée centrale'
+            ) * 100.0 / r.nb_apnees
+        END AS pct_apnees_centrales
+
+    FROM resultat_nuit r
+    JOIN nuit_etude n ON r.id_nuit = n.id_nuit
+    WHERE n.id_patient = p_id_patient;
+END
+```
+
+## Procédure stockée pour l'insertion du suivi_cpap_jour dans la base MySQL
+```bash
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_insertion_faits_suivi_cpap_jour`(
+    IN p_id_appareil INT,
+    IN p_date_jour DATE,
+    IN p_duree_utilisation_h DECIMAL(4,2),
+    IN p_iah_residuel DECIMAL(5,2),
+    IN p_fuites_l_min DECIMAL(6,2),
+    IN p_nb_evenements INT,
+    IN p_qualite_donnee VARCHAR(20)
+    )
+BEGIN
+	INSERT INTO suivi_cpap_jour (id_appareil,date_jour,duree_utilisation_h,iah_residuel,fuites_l_min,nb_evenements,qualite_donnee)
+    VALUES (
+        p_id_appareil,
+        p_date_jour,
+        p_duree_utilisation_h,
+        p_iah_residuel,
+        p_fuites_l_min,
+        p_nb_evenements,
+        p_qualite_donnee
+        );
 END
 ```

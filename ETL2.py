@@ -88,7 +88,7 @@ def lire_csv_capteur(chemin_fichier):
         raise FileNotFoundError(f"Fichier introuvable : {chemin_fichier}")
 
     df = pd.read_csv(chemin_fichier)
-
+    
     if df.empty:
         raise ValueError(f"Le fichier {chemin_fichier} est vide.")
 
@@ -110,36 +110,41 @@ def lire_csv_capteur(chemin_fichier):
 # ============================================================
 # 2) TRANSFORM : calcul des alertes avec pandas
 # ============================================================
-# def calculer_alerte_observance(duree_utilisation_h):
-#     """
-   
-#     Paramètres
-#     ----------
-#     df : DataFrame : sortie de lire_csv_capteur()
-
-#     Retourne
-#     --------
-#     dict avec les indicateurs prêts à être passés à la procédure.
-#     """
-
-#     if duree_utilisation_h >= 4:
-#         return 0
-#     else :
-#         return 1
-
- 
-
-# def calculer_alerte_iah_residuel(iah_residuel):
-#     """Retourne alerte selon l'IAH_residuel."""
-#     if iah_residuel >= 5:
-#         return 1
-#     else:
-#         return 0
-
+# Les calculls sont effectués dans la fonction 'alimentaer_faits_suivi_cpap_jour'
 
 # ============================================================
 # 3) LOAD : base analytique SQLite
 # ============================================================
+def ecrire_dans_faits_suivi_cpap_jour(id_appareil, date_jour,duree_utilisation_h,iah_residuel,fuites_l_min, nb_evenements, qualite_donnee):
+
+    connexion = None
+    try:
+        connexion = mysql.connector.connect(**MYSQL_CONFIG)
+        curseur = connexion.cursor(dictionary=True)
+        curseur.callproc("sp_insertion_faits_suivi_cpap_jour",
+                         [id_appareil,date_jour,duree_utilisation_h,iah_residuel,fuites_l_min,nb_evenements,qualite_donnee]
+                        )
+
+        resultat = None
+        for jeu_resultat in curseur.stored_results():
+            resultat = jeu_resultat.fetchall()
+        
+        if bool(resultat):
+            print("Opération d'écriture dans suivi_cpap_jour terminée avec succès")
+
+        curseur.close()
+
+    except MySQLError as erreur:
+        raise RuntimeError(
+            f"Erreur MySQL lors de l'appel à sp_insertion_faits_suivi_cpap_jour "
+            f"pour : {erreur}"
+        ) from erreur
+
+    finally:
+        if connexion is not None and connexion.is_connected():
+            connexion.close()
+
+
 def initialiser_database(chemin_db=DB_PATH):
     """Crée la table faits_suivi_cpap_jour si elle n'existe pas."""
     connexion = sqlite3.connect(chemin_db)
@@ -177,7 +182,6 @@ def initialiser_database(chemin_db=DB_PATH):
 
 def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, date_jour, duree_utilisation_h, iah_residuel, 
                                     fuites_l_min, nb_evenements, qualite_donnee, id_suivi_le_plus_proche, chemin_db=DB_PATH):
-   
     connexion = sqlite3.connect(chemin_db)
 
     try:
@@ -218,6 +222,7 @@ def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, date_jour, dure
 
     finally:
         connexion.close()
+
 def lire_suivi_patient(id_patient):
     """
     Appelle la procédure sp_lire_suivi_patient pour récupérer
@@ -289,7 +294,6 @@ def executer_pipeline(id_patient):
         print("\n[1/6] Extraction du CSV (pandas)...")
         df = lire_csv_capteur(chemin_csv)
         df["id_suivi_le_plus_proche"] = lire_suivi_patient(id_patient)
-        #print("Notre dataframe :\n", df)
         print(f"  {len(df)} lignes lues")
 
 #--- TRANSFORM ---
@@ -299,7 +303,7 @@ def executer_pipeline(id_patient):
 
        
         # --- LOAD : db ---
-        print("\n[6/6] Alimentation de la DB SQLite...")
+        print("\n[3/6] Alimentation de la DB SQLite...")
         initialiser_database()
         
         for row in df.itertuples(index=False):
@@ -314,7 +318,20 @@ def executer_pipeline(id_patient):
                 qualite_donnee=row.qualite_donnee,
                 id_suivi_le_plus_proche=row.id_suivi_le_plus_proche,
                 chemin_db=DB_PATH
-    )
+            )
+        
+        print("\n[4/6] Alimentation de la MySQL table 'suivi_cpap_jour'...")
+        
+        for row in df.itertuples(index=False):
+            ecrire_dans_faits_suivi_cpap_jour(
+                id_appareil=int(row.id_appareil),
+                date_jour=row.date_jour,
+                duree_utilisation_h=row.duree_utilisation_h,
+                iah_residuel=row.iah_residuel,
+                fuites_l_min=row.fuites_l_min,
+                nb_evenements=row.nb_evenements,
+                qualite_donnee=row.qualite_donnee
+                )    
 
 
         print(f"\n Pipeline terminé : Patient #{id_patient}\n")

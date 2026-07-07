@@ -1,5 +1,7 @@
 # RAPPORT DE REALISATION D'ETLs MULTIPLES SUR UN WORKFLOW D'ETUDE HOSPITALIERE
 
+Ce projet d'ETL en 3 phases à destination des 
+
 ## C1, C2 : extraction et requêtes SQL (rappel ETL1, mini ETL CPAP)
 
 ## C4 : modélisationdes données (schéma Galaxy + dimsuivipatient)

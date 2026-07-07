@@ -9,7 +9,7 @@ C1 . **Automatiser l'extraction de données** depuis un service web, une page we
 C2. **Développer les requêtes de type SQL d'extraction des données** depuis un système de gestion de base de données et un système big data en appliquant le langage de requête propre au système afin de préparer la collecte des données nécessaires au projet.
 - ETL 3: Est un pipeline qui permets d'alimenter la base de données relationnel et la base de données analytique.
 
-## C4 : modélisationdes données (schéma Galaxy + dimsuivipatient)
+## C4 : modélisation des données (schéma Galaxy + dimsuivipatient)
 
 **Créer une base de données** dans le respect du RGPD en élaborant les modèles conceptuels et physiques des données à partir des données préparées et en programmant leur import afin de stocker le jeu de données du projet.
 - Non réaliser pour le moment

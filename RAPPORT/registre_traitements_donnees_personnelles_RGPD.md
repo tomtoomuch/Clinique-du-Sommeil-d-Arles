@@ -1,422 +1,391 @@
 # Registre des traitements de données à caractère personnel
 
-## Établissement de santé spécialisé dans la prise en charge des apnées du sommeil
+## Centre de diagnostic et de traitement des troubles respiratoires du sommeil
 
-### Version
+**Version :** 2.0
 
-* Version : 1.0
-* Date : 7 juillet 2026
-* Responsable du traitement : [Nom de l'établissement]
-* Délégué à la protection des données (DPO) : [Nom / coordonnées]
+**Cadre réglementaire**
 
----
-
-# 1. Objet
-
-Le présent document recense les principaux traitements de données à caractère personnel mis en œuvre par l'établissement dans le cadre de son activité de dépistage, de diagnostic, de traitement et de suivi des patients atteints de troubles respiratoires du sommeil, notamment des apnées obstructives du sommeil.
-
-Il constitue un élément du registre des activités de traitement prévu par le Règlement (UE) 2016/679 (RGPD).
+* Règlement (UE) 2016/679 (RGPD)
+* Code de la santé publique
+* Référentiel HDS (Hébergeur de Données de Santé)
+* Doctrine de la CNIL relative aux données de santé
 
 ---
 
-# 2. Traitement n°1 : Gestion administrative des patients
+# Cartographie des acteurs
 
-## Finalité
+## Responsable du traitement
 
-Assurer l'identification du patient, la création du dossier administratif, la gestion des rendez-vous, la facturation et les relations avec les organismes payeurs.
+Le Centre du Sommeil est responsable des traitements réalisés dans le cadre :
 
-## Base juridique
+* de la consultation médicale ;
+* du diagnostic ;
+* de la prescription ;
+* du suivi clinique ;
+* de la coordination des soins.
 
-* Exécution d'une mission de soins.
-* Respect des obligations légales.
-* Gestion administrative des prestations de santé.
+## Responsables de traitement distincts
 
-## Personnes concernées
+Les organismes suivants agissent généralement comme responsables de traitement pour leurs propres finalités :
 
-* Patients
-* Représentants légaux
-* Personnes de confiance
+* Prestataire de Santé à Domicile (PSAD)
+* Fabricant du dispositif médical connecté (selon les traitements réalisés)
+* Assurance Maladie
+* Organisme complémentaire
 
-## Données traitées
-
-* Nom
-* Prénom
-* Date de naissance
-* Sexe
-* Adresse
-* Téléphone
-* Email
-* Numéro de sécurité sociale
-* Organisme d'assurance maladie
-* Mutuelle
-* Coordonnées du médecin prescripteur
-
-## Destinataires
-
-* Personnel administratif
-* Médecins
-* Service facturation
-* Assurance maladie
-* Organismes complémentaires
-
-## Durée de conservation
-
-Selon les obligations réglementaires applicables aux établissements de santé.
-
-## Mesures de sécurité
-
-* Authentification forte
-* Gestion des habilitations
-* Chiffrement des sauvegardes
-* Journalisation des accès
-* Sauvegardes quotidiennes
+Des conventions de partage de données ou des contrats de sous-traitance doivent préciser les responsabilités respectives conformément à l'article 26 (responsables conjoints) ou à l'article 28 (sous-traitance) du RGPD, selon les situations.
 
 ---
 
-# 3. Traitement n°2 : Constitution du dossier médical
+# Registre des traitements
 
-## Finalité
+## Traitement 1 – Gestion administrative des patients
 
-Assurer la prise en charge médicale du patient.
+**Finalité**
 
-## Base juridique
+Gestion des admissions, rendez-vous, création du dossier patient, facturation.
 
-Traitement nécessaire aux fins de la médecine préventive, du diagnostic médical et de la prise en charge sanitaire.
+**Données**
 
-## Données traitées
+* identité
+* coordonnées
+* sécurité sociale
+* couverture sociale
+* médecin traitant
+* personne de confiance
 
-### Données d'identification
+**Destinataires**
 
-* Identité
-* Coordonnées
-
-### Données médicales
-
-* Antécédents médicaux
-* Antécédents chirurgicaux
-* Traitements en cours
-* Allergies
-* IMC
-* Taille
-* Poids
-* Tension artérielle
-* Habitudes de vie
-* Consommation de tabac
-* Consommation d'alcool
-
-### Symptômes
-
-* Ronflement
-* Somnolence
-* Fatigue
-* Céphalées matinales
-* Nycturie
-* Troubles de concentration
-
-## Destinataires
-
-* Médecins
-* Infirmiers
-* Techniciens du sommeil
-* Personnel autorisé
-
-## Durée de conservation
-
-Conformément aux obligations réglementaires relatives au dossier médical.
+* secrétariat
+* médecins
+* comptabilité
 
 ---
 
-# 4. Traitement n°3 : Réalisation des examens du sommeil
+## Traitement 2 – Dossier médical
 
-## Finalité
+**Finalité**
 
-Diagnostiquer les troubles respiratoires du sommeil.
+Suivi médical.
 
-## Données traitées
+**Données**
 
-### Examens
+* antécédents
+* traitements
+* examens
+* comptes rendus
+* allergies
+* paramètres cliniques
 
-* Polygraphie ventilatoire
-* Polysomnographie
-* Oxymétrie nocturne
+---
 
-### Données enregistrées
+## Traitement 3 – Examens du sommeil
 
-* Débit respiratoire
-* Saturation en oxygène
-* Fréquence cardiaque
-* Position du patient
-* Ronflements
-* Mouvements thoraciques
-* Mouvements abdominaux
-* EEG (si polysomnographie)
+**Données**
+
+* polygraphie
+* polysomnographie
+* oxymétrie
+* fréquence cardiaque
+* saturation
+* débit respiratoire
+* mouvements thoraciques
+* EEG
 * EMG
 * EOG
 
-### Résultats
+---
 
-* IAH
-* Index de désaturation
-* Temps passé sous 90 %
-* Durée des événements
-* Type d'apnées
+## Traitement 4 – Prescription d'un traitement PPC
 
-## Destinataires
+**Finalité**
 
-* Médecins spécialistes
-* Pneumologues
-* ORL
-* Cardiologues si nécessaire
+Prescription du dispositif médical.
 
-## Mesures de sécurité
+**Données transmises au PSAD**
 
-* Serveurs sécurisés
-* Contrôle des accès
-* Sauvegardes chiffrées
+* identité
+* coordonnées
+* prescription
+* diagnostic
+* paramètres de pression
+* compte rendu médical
+* niveau de sévérité de l'apnée
+* informations administratives nécessaires à la prise en charge
+
+**Destinataires**
+
+* prestataire de santé à domicile
+* médecin prescripteur
 
 ---
 
-# 5. Traitement n°4 : Suivi thérapeutique PPC (Pression Positive Continue)
+# Traitement 5 – Installation du dispositif PPC (Prestataire)
 
-## Finalité
-
-Assurer le suivi des patients appareillés.
+Ce traitement est généralement réalisé sous la responsabilité propre du prestataire de santé à domicile.
 
 ## Données traitées
 
-* Type d'appareil
-* Numéro de série
-* Pression prescrite
-* Observance
-* Nombre d'heures d'utilisation
-* Fuites
+* coordonnées
+* adresse d'installation
+* disponibilité du patient
+* historique des interventions
+* numéro de série de l'appareil
+* masque utilisé
+* accessoires fournis
+* compte rendu d'installation
+* formation du patient
+
+## Finalités
+
+* installation
+* maintenance
+* livraison
+* renouvellement
+* assistance technique
+
+---
+
+# Traitement 6 – Télésuivi des appareils PPC
+
+Le dispositif peut transmettre automatiquement :
+
+* heures d'utilisation
+* observance
 * IAH résiduel
-* Alertes techniques
+* pression délivrée
+* fuites
+* évènements respiratoires
+* qualité du masque
+* alertes techniques
+* données de fonctionnement
 
 ## Destinataires
 
-* Pneumologue
-* Prestataire de santé à domicile
-* Personnel infirmier
+### Centre du sommeil
 
-## Particularité
+Suivi thérapeutique.
 
-Certaines données peuvent être transmises automatiquement par télésuivi sécurisé.
+### Prestataire
 
----
+Maintenance.
 
-# 6. Traitement n°5 : Télésurveillance médicale
+### Fabricant (selon le modèle)
 
-## Finalité
+Maintenance des plateformes connectées.
 
-Suivre à distance l'efficacité du traitement.
+### Hébergeur HDS
 
-## Données
-
-* Connexion de l'appareil
-* Observance
-* Paramètres respiratoires
-* Évènements nocturnes
-* Alertes
-
-## Base juridique
-
-Prise en charge médicale et obligations réglementaires relatives à la télésurveillance lorsqu'elles s'appliquent.
-
-## Sous-traitants
-
-* Hébergeur de données de santé (HDS)
-* Fabricant de l'appareil
-* Prestataire de télésuivi
+Stockage sécurisé.
 
 ---
 
-# 7. Traitement n°6 : Correspondance médicale
+# Traitement 7 – Maintenance du matériel
 
-## Finalité
+Le PSAD collecte :
 
-Transmission d'informations aux professionnels participant à la prise en charge.
+* incidents
+* remplacement des masques
+* changement des tuyaux
+* interventions techniques
+* visites à domicile
+* historique SAV
 
-## Données
+Ces traitements sont distincts du suivi médical.
 
-* Comptes rendus
-* Prescriptions
-* Courriers médicaux
-* Résultats d'examens
+---
 
-## Destinataires
+# Traitement 8 – Suivi de l'observance
 
-* Médecin traitant
-* Pneumologue
+Objectifs :
+
+* vérifier l'efficacité
+* adapter le traitement
+* répondre aux exigences de remboursement lorsque la réglementation le prévoit
+
+Données :
+
+* durée moyenne d'utilisation
+* utilisation quotidienne
+* interruptions
+* indice d'apnées résiduelles
+
+Les échanges entre le centre et le PSAD sont limités aux données strictement nécessaires.
+
+---
+
+# Traitement 9 – Gestion des alertes
+
+Alertes possibles :
+
+* arrêt du traitement
+* mauvaise observance
+* fuite importante
+* panne
+* pression anormale
+* masque défectueux
+
+Actions :
+
+* appel du patient
+* consultation
+* intervention technique
+* renouvellement du matériel
+
+---
+
+# Traitement 10 – Facturation
+
+Flux :
+
+Centre → Assurance Maladie
+
+Prestataire → Assurance Maladie
+
+Prestataire → Complémentaire santé
+
+---
+
+# Traitement 11 – Coordination des soins
+
+Échanges avec :
+
+* médecin traitant
+* pneumologue
 * ORL
-* Cardiologue
-* Neurologue
-* Autres spécialistes
+* cardiologue
+* neurologue
+* diabétologue
+
+Documents :
+
+* comptes rendus
+* prescriptions
+* évolution thérapeutique
 
 ---
 
-# 8. Traitement n°7 : Facturation
+# Flux de données
 
-## Finalité
+## Centre → Prestataire PPC
 
-Gestion financière.
+Transmission :
 
-## Données
+* ordonnance
+* identité
+* coordonnées
+* diagnostic
+* paramètres PPC
+* urgence éventuelle
 
-* Identité
-* Actes réalisés
-* Cotation
-* Organisme payeur
-* Historique de paiement
+## Prestataire → Centre
 
----
+Transmission :
 
-# 9. Traitement n°8 : Gestion qualité
+* installation réalisée
+* incidents
+* observance
+* difficultés du patient
+* remplacement du matériel
+* alertes
 
-## Finalité
+## Appareil → Plateforme HDS
 
-Amélioration continue des soins.
+Transmission automatique :
 
-## Données
+* télémétrie
+* données d'observance
+* paramètres techniques
 
-* Indicateurs anonymisés ou pseudonymisés
-* Taux d'observance
-* Délais de prise en charge
-* Satisfaction des patients
-* Évènements indésirables
+## Plateforme HDS → Centre
 
----
+Accès sécurisé des professionnels habilités.
 
-# 10. Traitement n°9 : Recherche clinique
+## Plateforme HDS → Prestataire
 
-## Finalité
-
-Participation à des études scientifiques.
-
-## Données
-
-* Données pseudonymisées
-* Résultats d'examens
-* Données thérapeutiques
-
-## Conditions
-
-* Respect des dispositions réglementaires applicables à la recherche impliquant la personne humaine.
-* Information des personnes concernées et, lorsque requis, recueil du consentement ou application du régime juridique approprié.
+Accès limité aux données nécessaires à la maintenance et au suivi logistique.
 
 ---
 
-# 11. Catégories générales de données traitées
+# Base juridique
 
-* Données d'identification
-* Coordonnées
-* Données administratives
-* Données sociales
-* Données de santé
-* Données biométriques fonctionnelles issues des examens du sommeil
-* Données de télésurveillance
-* Données de facturation
-* Données de connexion aux applications de télésuivi
+## Centre du sommeil
 
----
+* exécution de la mission de soins ;
+* obligations légales ;
+* prise en charge médicale.
 
-# 12. Destinataires
+## Prestataire de santé à domicile
 
-En fonction des habilitations :
-
-* Personnel administratif
-* Médecins
-* Infirmiers
-* Techniciens du sommeil
-* Prestataires de santé à domicile
-* Hébergeurs certifiés HDS
-* Organismes d'assurance maladie
-* Organismes complémentaires
-* Autorités légalement habilitées
+* exécution du contrat de fourniture et de maintenance du dispositif médical ;
+* obligations réglementaires ;
+* continuité des soins.
 
 ---
 
-# 13. Sous-traitants
-
-Les sous-traitants interviennent uniquement dans le cadre d'un contrat conforme au RGPD précisant notamment :
-
-* les finalités ;
-* les mesures de sécurité ;
-* les obligations de confidentialité ;
-* les modalités d'assistance au responsable du traitement ;
-* les conditions de recours à des sous-traitants ultérieurs.
-
----
-
-# 14. Mesures de sécurité
+# Mesures de sécurité
 
 ## Organisationnelles
 
-* Politique de confidentialité
-* Charte informatique
-* Formation du personnel
-* Gestion des habilitations
-* Revues régulières des droits d'accès
-* Procédure de gestion des violations de données
+* gestion des habilitations
+* politique de mots de passe
+* confidentialité contractuelle
+* formation RGPD
+* revue annuelle des accès
 
 ## Techniques
 
-* Hébergement certifié HDS
-* Chiffrement des communications
-* Chiffrement des sauvegardes
-* Authentification multifacteur pour les accès sensibles
-* Journalisation des accès
-* Antivirus et EDR
-* Pare-feu
-* Sauvegardes testées régulièrement
-* Plan de reprise d'activité
+* hébergement HDS
+* authentification multifacteur
+* chiffrement TLS
+* journalisation
+* sauvegardes
+* supervision
+* tests de restauration
 
 ---
 
-# 15. Analyse des risques
+# Analyse des risques
 
-Principaux risques identifiés :
-
-* Accès non autorisé au dossier médical.
-* Perte ou divulgation de données de santé.
-* Usurpation d'identité.
-* Cyberattaque (rançongiciel).
-* Erreur de destinataire lors de l'envoi d'un compte rendu.
-* Mauvaise configuration des plateformes de télésurveillance.
-* Perte de disponibilité des données.
-
-Mesures de réduction :
-
-* Contrôles d'accès renforcés.
-* Chiffrement.
-* Sensibilisation des utilisateurs.
-* Audits réguliers.
-* Sauvegardes hors ligne.
-* Tests de restauration.
-* Procédures de notification des violations de données.
+| Risque                                       | Gravité     | Mesures                                                |
+| -------------------------------------------- | ----------- | ------------------------------------------------------ |
+| Divulgation des données médicales            | Très élevée | Chiffrement, contrôle des accès                        |
+| Mauvais destinataire                         | Élevée      | Double contrôle des envois                             |
+| Cyberattaque                                 | Très élevée | EDR, PRA, sauvegardes                                  |
+| Vol d'identifiants                           | Élevée      | MFA                                                    |
+| Perte d'un ordinateur portable               | Élevée      | Chiffrement du disque                                  |
+| Mauvaise synchronisation des plateformes PPC | Moyenne     | Contrôles automatiques et audits                       |
+| Accès excessif par un prestataire            | Élevée      | Principe du moindre privilège et revues d'habilitation |
 
 ---
 
-# 16. Droits des personnes
+# Sous-traitants et partenaires
 
-Les patients disposent, dans les conditions prévues par le RGPD et les dispositions applicables au secteur de la santé, des droits suivants :
+Le registre doit préciser pour chacun :
 
-* droit à l'information ;
-* droit d'accès ;
-* droit de rectification ;
-* droit à la limitation du traitement lorsque les conditions sont réunies ;
-* droit d'opposition lorsque ce droit est applicable ;
-* droit d'introduire une réclamation auprès de l'autorité de contrôle compétente.
+* raison sociale ;
+* rôle (responsable de traitement, responsable conjoint ou sous-traitant) ;
+* catégories de données traitées ;
+* localisation de l'hébergement ;
+* certification HDS le cas échéant ;
+* durée de conservation ;
+* mesures de sécurité ;
+* existence d'un contrat conforme à l'article 28 du RGPD lorsque le partenaire agit comme sous-traitant.
 
-L'exercice de certains droits peut être limité lorsque le traitement repose sur une obligation légale ou est nécessaire à la prise en charge médicale.
+Une attention particulière doit être portée aux plateformes de télésuivi fournies par les fabricants de PPC : selon les modalités contractuelles et les finalités poursuivies (maintenance, amélioration des dispositifs, services numériques), ces acteurs peuvent intervenir comme sous-traitants ou comme responsables de traitement distincts. Cette qualification doit être analysée et formalisée.
 
 ---
 
-# 17. Révision du registre
+# Recommandations complémentaires
 
-Le présent registre est revu :
+Le Centre du Sommeil devrait disposer des documents suivants :
 
-* lors de toute évolution des traitements ;
-* lors de l'introduction d'un nouvel outil informatique ;
-* après tout incident de sécurité majeur ;
-* au minimum une fois par an.
+1. Registre des traitements (présent document).
+2. Cartographie des flux de données.
+3. Politique d'habilitation des utilisateurs.
+4. Procédure de gestion des violations de données.
+5. Procédure d'exercice des droits des patients.
+6. Modèle de convention d'échange de données avec les PSAD.
+7. Clauses de protection des données intégrées aux contrats avec les prestataires.
+8. Analyse d'impact relative à la protection des données (AIPD) lorsque les traitements présentent un risque élevé, notamment en raison du volume de données de santé traitées et de la télésurveillance.

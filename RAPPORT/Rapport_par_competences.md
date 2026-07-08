@@ -157,10 +157,10 @@ L’ETL1 répond à la compétence C1 car il automatise l’ensemble du processu
 
 
 **Alimentation_base_analytique**
-Ce fichier est un ETL(3) qui a pour object d'alimenter la base_analytique.db avec les données de la base de donnée relationnelle de la Clinique du Sommeil d'Arles (cliniquenuitscompletes.sql).
+Ce fichier est un ETL(3) qui a pour objectif d’alimenter la base_analytique.db avec les données de la base de données relationnelle de la Clinique du Sommeil d’Arles (cliniquenuitscompletes.sql).
 
   - Connexion du fichier à MySQL : 
-*Nous avons choisi pour cette connexion de la sécuriser en mettant les données en dure (mot de passe, port et non de la base) dans un fichier non suivi par Git.* 
+*Nous avons choisi de sécuriser cette connexion en plaçant les données sensibles en dur (mot de passe, port et non de la base) dans un fichier non suivi par Git.* 
 
 ```bash
 import mysql.connector
@@ -183,7 +183,7 @@ connexion = sqlite3.connect(chemin_db)
 connexion.commit()
 curseur.close()
 ```
-   - Requête d'alimentation dim_temps : Afin d'alimenter la table dim_temps nous faisons cette requête directement stocké dans l'ETL car aucune donnée ne vient ici de MySQL. 
+   - Afin d’alimenter la table dim_temps, nous exécutons cette requête directement depuis l’ETL, car aucune donnée ne provient ici de MySQL.
 ```bash
 def charger_dim_temps (conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -252,7 +252,7 @@ def charger_dim_temps (conn_sqlite):
 
 ```
 
-   - Requête récupération des données MySQL pour alimenter la table dim_patient :
+   - Requête de récupération des données MySQL pour alimenter la table dim_patient :
 
 ```bash
 def charger_dim_patient(id_patient, conn_sqlite):
@@ -367,7 +367,7 @@ BEGIN
 END
 ```
    
-   - Appel de la procédure stocké "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
+   - Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -521,20 +521,32 @@ Cette analyse fonctionnelle nous a permis de définir les besoins métier, de mo
 C15. **Concevoir le cadre technique d'une application integrant un service d'intelligence artificielle**, à partir de l'analyse du besoin, en spécifiant l'architecture technique et applicative et en préconisant les outils et méthodes de développement, pour permettre le développement du projet.
 
 1. Identifier les besoins :
-Cette interface s'adresse au médecin validateur désigné par l'oppérateur, pour lui permettre de visualiser toutes les informations de la nuit d'étude (rapport résultats de la nuit d'étude, la courbe spO2, la courbe du débit nasal et la courbe des ronflements). Mais aussi d'avoir une aide au diagnostic avec l'interprétation de l'IA basée sur les commorbidité du patient. Enfin toujours sur cette interface le médecin validateur pourra poser un diagnostic (via un commentaire médical de validation) et valider le rapport final. Rapport final qui sera par la suite enregistré dans le dossier du patient et téléchargé par le médecin.
+Cette interface s’adresse au médecin validateur désigné par l’opérateur. Elle lui permet de visualiser toutes les informations relatives à la nuit d’étude : le rapport de résultats, la courbe SpO₂, la courbe du débit nasal et la courbe des ronflements.
+
+Elle offre également une aide au diagnostic grâce à l’interprétation de l’IA, basée sur les comorbidités du patient.
+
+Enfin, depuis cette interface, le médecin validateur peut poser un diagnostic, via un commentaire médical de validation, puis valider le rapport final. Ce rapport sera ensuite enregistré dans le dossier du patient et téléchargé par le médecin.
 
 2. Choisir la technologie
-   - Pour l'application du médecin validateur on a choisit d'utiliser Streamlit, qui permet d'avoir rapidement une interface. 
-
-   - Il faut également choisir l'IA qui est la plus adapré aux besoins identifiés précédemment. Ici nous utilisons l'IA de Random Forest, pour une application médicale. Random Forest (RF) est l'un des algorithmes les plus utilisés en IA médicale grâce à sa robustesse et son interprétabilité. On l'a choisi également car elle a un taux de réussite de 85% à 93% sur les prédictions des apnées du sommeil.
+   - Pour l’application du médecin validateur, nous avons choisi d’utiliser Streamlit, qui permet de créer rapidement une interface.
+   - Il faut également choisir l’IA la plus adaptée aux besoins identifiés précédemment. Ici, nous utilisons l’algorithme Random Forest pour une application médicale. Random Forest (RF) est l’un des algorithmes les plus utilisés en IA médicale grâce à sa robustesse et à son interprétabilité. Nous l’avons également choisi car il présente un taux de réussite de 85 % à 93 % pour la prédiction des apnées du sommeil.
 
 3. Architecture technique 
-   - Création d'une application pour consulter les résultats et des nuits d'étude
-   - Création d'un ETL (alimentation_base_analytique) afin de continuer à l'alimenter le modèle pour augmenter sa fiabilité.
+   - Création d’une application permettant de consulter les résultats des nuits d’étude.
+   - Création d’un ETL (alimentation_base_analytique) afin de continuer à alimenter le modèle et d’augmenter sa fiabilité.
 
-4. Préconisation : 
-   - Concernant l'interface elle est actuellement lente, si on souhaite partir sur une interface plus performante il faudra partir sur le même modèle que l'application Opérateur et utiliser de l'Angular.
-   - Concernant l'utilisation de l'IA, continuer à l'alimenter avec les données récoltées. Impliquer les médecins dans l'entrainement de l'IA notamment pour l'interprétation des résultats de l'IA (prendre en concidération les dernières recherches).
+4. Préconnisation : 
+   - Concernant l’interface, elle est actuellement lente. Si l’on souhaite partir sur une interface plus performante, il faudra suivre le même modèle que l’application Opérateur et utiliser Angular.
+   - Dans le cadre de l’utilisation de l’IA pour prédire les comorbidités dans une clinique du sommeil, plusieurs préconisations peuvent être formulées:
+     - Tout d’abord, les variables actuellement utilisées pour alimenter le modèle Random Forest semblent insuffisamment larges. Les features utilisées sont principalement liées aux données respiratoires et physiologiques de la nuit d’étude : IAH, SpO₂ minimale, SpO₂ moyenne, nombre d’apnées, nombre d’hypopnées, durée du sommeil, IMC, tabagisme et consommation de tabac.
+     Or, pour améliorer la fiabilité du modèle, il serait pertinent d’intégrer d’autres variables importantes, comme l’âge, le genre, les antécédents médicaux, les traitements en cours, les pathologies déjà connues, les habitudes de vie, les symptômes déclarés par le patient ou encore certains facteurs cardiovasculaires et métaboliques.
+     - Cette limite pose également une question éthique : un modèle entraîné avec un nombre restreint de variables risque de produire des prédictions incomplètes, voire biaisées. Par exemple, si certaines catégories de patients sont sous-représentées dans les données d’entraînement, le modèle peut être moins performant pour ces profils. Cela peut entraîner une inégalité dans l’aide au diagnostic proposée aux médecins.
+     Il est donc nécessaire de vérifier la représentativité des données utilisées pour entraîner l’IA. Les données doivent couvrir des profils variés de patients, notamment en termes d’âge, de sexe, d’IMC, d’antécédents médicaux et de sévérité des troubles du sommeil.
+     - La fiabilité du modèle doit également être contrôlée régulièrement. Même si Random Forest est un algorithme robuste et interprétable, ses prédictions ne doivent pas être considérées comme un diagnostic automatique. L’IA doit rester un outil d’aide à la décision, et non un substitut au jugement médical. La décision finale doit toujours appartenir au médecin validateur.
+     - Il est également important de mettre en place une évaluation continue du modèle. Le taux de réussite global ne suffit pas : il faut aussi analyser les faux positifs, les faux négatifs, la sensibilité, la spécificité et les performances selon différents groupes de patients. Dans un contexte médical, une erreur de prédiction peut avoir des conséquences importantes sur la prise en charge du patient.
+     - Un autre enjeu éthique concerne la transparence. Le médecin doit pouvoir comprendre les grandes raisons qui ont conduit l’IA à proposer une prédiction. Il est donc recommandé d’accompagner les résultats de l’IA avec des indicateurs explicatifs, comme l’importance des variables utilisées par le modèle.
+     - Enfin, l’utilisation de données médicales impose une vigilance particulière concernant la protection des données personnelles. Les données doivent être sécurisées, limitées aux informations strictement nécessaires, et utilisées dans le respect du RGPD. Il est aussi important d’informer les patients de l’utilisation possible de leurs données dans le cadre de l’amélioration du modèle.
+
     
 
 ## C16,C17 : réalisation technique (composants développés)
@@ -745,6 +757,8 @@ def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, date_jour, dure
     finally:
         connexion.close()  #fermeture de la connexion
 ```
+
+```bash
     - JavaScript avec Express et NodeJs pour la création de l'API permettant l'utilisation de routes et requètes nécessaires à la communication entre le front et le back
 
     - Streamlit pour les résultats des nuits avec prédiction de comorbidités
@@ -769,9 +783,11 @@ Problème rencontré dans l'exécussion de l'ETL (alimentation_base_analytique) 
 ```bash
 sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 21152 and this is thread id 17492.
 ```
-Le problème que nous avons rencontré ici est un conflit entre notre application Streamlit et Sqlite. Sqlite bloque, car Streamlit utilise un autre thread que la connexion sqlite. 
-Pour remédier à ce problème nous avons consulter tchatGPT qui nous a conseillé de changer notre connexion Sqlite dans notre ETL, passer d'un niveau global au niveau des fonctions.
-Nous avons donc supprimé la connexion global et nous avons intégré à chaque fonction lancé par l'ETL :
+Le problème rencontré ici est un conflit entre notre application Streamlit et SQLite. SQLite bloque l’exécution, car Streamlit utilise un autre thread que celui de la connexion SQLite.
+
+Pour remédier à ce problème, nous avons consulté ChatGPT, qui nous a conseillé de modifier la gestion de la connexion SQLite dans notre ETL, en la passant d’un niveau global au niveau des fonctions.
+
+Nous avons donc supprimé la connexion globale et nous l’avons intégrée dans chaque fonction lancée par l’ETL :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()

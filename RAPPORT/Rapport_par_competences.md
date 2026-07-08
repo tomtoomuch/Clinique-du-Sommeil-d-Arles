@@ -310,7 +310,7 @@ Cette interface s'adresse au médecin validateur désigné par l'oppérateur, po
    - Création d'une application pour consulter les résultats et des nuits d'étude
    - Création d'un ETL (alimentation_base_analytique) afin de continuer à l'alimenter le modèle pour augmenter sa fiabilité.
 
-4. Préconisation : 
+4. Préconnisation : 
    - Concernant l'interface elle est actuellement lente, si on souhaite partir sur une interface plus performante il faudra partir sur le même modèle que l'application Opérateur et utiliser de l'Angular.
    - Concernant l'utilisation de l'IA, continuer à l'alimenter avec les données récoltées. Impliquer les médecins dans l'entrainement de l'IA notamment pour l'interprétation des résultats de l'IA (prendre en concidération les dernières recherches).
     

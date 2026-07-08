@@ -254,7 +254,7 @@ def charger_dim_temps (conn_sqlite):
 
 ```
 
-   - Requête de récupération des données MySQL pour alimenter la table dim_patient :
+- Requête de récupération des données MySQL pour alimenter la table dim_patient :
 
 ```bash
 def charger_dim_patient(id_patient, conn_sqlite):
@@ -369,7 +369,7 @@ BEGIN
 END
 ```
    
-   - Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
+- Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -439,13 +439,24 @@ Pour ce projet, il est question de convertir notre modèle relationnel en modèl
 
 
 ## C5 : API/accès aux données (procédures stockées utilisées)
+
 **Développer une API mettant à disposition le jeu de données** en utilisant l'architecture REST afin de permettre l'exploitation du jeu de données par les autres composants du projet.
-- 
+
 Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ et _frontend_ ainsi qu'avec nos stockages de données.
+
+Notre configuration de l'API Node.js permet de proposer un point d'entréee principal qui invite à s'authentifier afin d'accéder aux fonctionnalités des ETL et de visualisation des données.
 
 ```ts
 router.post('/login', loginController.connexionUtilisateur);
+```
+La route ```/login``` permet donc à Angular d'interroger la base de données afin d'authentifier l'utilisateur en foncction de son adresse électronique et son mot de passe. Si l'utilisateur existe et qu'il renseigne le bon mot de passe, il accède aux interfaces utilisateurs suivantes.
+
+```ts
 router.get('/job', loginController.findJob);
+```
+La route ```/job``` est configurée afin d'être sollicitée par Angular qui utilise ce canal pour récupérer le rôle de l'utilisateur et appliquer les permissions d'accès aux données.
+
+```ts
 router.get('/getPersonnel', loginController.getPersonnel);
 router.get('/getInfoPersonnel', loginController.getInfoPersonnel);
 router.post('/changeNamePersonnel', loginController.changeNamePersonnel);
@@ -454,6 +465,8 @@ router.post('/changeEmailPersonnel', loginController.changeEmailPersonnel);
 router.post('/changePhonePersonnel', loginController.changePhonePersonnel);
 router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
 ```
+Ces routes supplémentaires permettent de récupérer rapidement des données, notamment, pour les services administratifs de la Clinique.
+
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
 # C14 – Analyser le besoin et modéliser l'application

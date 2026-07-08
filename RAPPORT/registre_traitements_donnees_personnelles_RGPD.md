@@ -247,7 +247,7 @@ Transmission :
 * coordonnées
 * diagnostic
 * paramètres PPC
-* urgence éventuelle
+* urgence éventuelle (liée à la sévérité du diagnostic)
 
 ## Prestataire → Centre
 
@@ -257,10 +257,8 @@ Transmission :
 * incidents
 * observance
 * difficultés du patient
-* remplacement du matériel
-* alertes
 
-## Appareil → Plateforme HDS
+## Appareil → Plateforme HDS (pas valable lors du prototypage)
 
 Transmission automatique :
 
@@ -272,33 +270,13 @@ Transmission automatique :
 
 Accès sécurisé des professionnels habilités.
 
-## Plateforme HDS → Prestataire
-
-Accès limité aux données nécessaires à la maintenance et au suivi logistique.
-
----
-
-# Base juridique
-
-## Centre du sommeil
-
-* exécution de la mission de soins ;
-* obligations légales ;
-* prise en charge médicale.
-
-## Prestataire de santé à domicile
-
-* exécution du contrat de fourniture et de maintenance du dispositif médical ;
-* obligations réglementaires ;
-* continuité des soins.
-
 ---
 
 # Mesures de sécurité
 
 ## Organisationnelles
 
-* gestion des habilitations
+* gestion des utilisateurs, des rôles et permissions
 * politique de mots de passe
 * confidentialité contractuelle
 * formation RGPD
@@ -306,8 +284,8 @@ Accès limité aux données nécessaires à la maintenance et au suivi logistiqu
 
 ## Techniques
 
-* hébergement HDS
-* authentification multifacteur
+* hébergement HDS (pas valable lors du prototypage)
+* authentification multifacteur (pas valable lors du prototypage)
 * chiffrement TLS
 * journalisation
 * sauvegardes

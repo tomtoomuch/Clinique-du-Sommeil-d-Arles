@@ -11,9 +11,9 @@ C1 . **Automatiser l'extraction de données** depuis un service web, une page we
 
 # Présentation globale du projet
 
-Le projet **Clinique du Sommeil d'Arles** a pour objectif d'automatiser le traitement des données des nuits d'étude afin d'aider les professionnels de santé dans le diagnostic, le suivi des patients et l'exploitation analytique des données.
+Le projet repose sur trois applications métiers, une API REST développée avec Express et trois pipelines ETL permettant d'automatiser le traitement des données des nuits d'étude et du suivi CPAP.
 
-Le système s'appuie sur trois applications métiers :
+Il s'articule autour des trois applications suivantes :
 
 - **Application Opérateur** : permet à l'infirmier de sélectionner une nuit d'étude à traiter, choisir le médecin validateur, saisir un commentaire médical et lancer automatiquement l'ETL1.
 
@@ -27,14 +27,13 @@ Pour alimenter ces applications, trois pipelines ETL ont été développés :
 
 - **ETL2** importe les données quotidiennes de suivi CPAP depuis un fichier CSV, calcule automatiquement les alertes métier (observance < 4 h et IAH résiduel > 5) et alimente la table faits_suivi_cpap_jour de la base analytique SQLite. Ces données sont ensuite exploitées par le Dashboard CPAP.
 
-- **ETL3** extrait les données médicales validées de la base opérationnelle MySQL et alimente la base analytique SQLite (modèle galaxie). Cette base est utilisée par le Dashboard CPAP pour les analyses et par le module d'intelligence artificielle pour entraîner les modèles de prédiction des comorbidités.
-
+-  **ETL3** extrait les données médicales validées de la base opérationnelle MySQL et alimente la base analytique SQLite (modèle galaxie).Cette base est exploitée par le Dashboard CPAP pour les analyses et par le module IA Comorbidités, qui utilise ces données historiques pour entraîner un modèle Random Forest capable de prédire les comorbidités les plus probables d'un patient.
 
 ## Focus sur l'ETL1
 
 ### Objectif
 
-L'ETL1 automatise le traitement complet d'une nuit d'étude polysomnographique. Il est lancé depuis l'application Opérateur après que l'infirmier sélectionne une nuit, choisisse le médecin validateur et saisisse un commentaire médical.
+L'ETL1 automatise le traitement complet d'une nuit d'étude polysomnographique. Il est lancé depuis l'application Opérateur après que l'infirmier sélectionne une nuit, choisisse le médecin validateur et saisisse un commentaire infirmier.
 
 ---
 
@@ -45,7 +44,9 @@ L'ETL1 automatise le traitement complet d'une nuit d'étude polysomnographique. 
 - MySQL
 - SQLite (Datalake)
 - Matplotlib
-- Streamlit (prototype) / Angular-Express (application)
+- Streamlit (prototype) 
+- Angular
+- Express (API REST)
 - Git / GitHub
 
 ---
@@ -151,7 +152,8 @@ except MySQLError as erreur:
 
 ## Conclusion
 
-L’ETL1 répond à la compétence C1 car il automatise l’ensemble du processus d’extraction, de transformation et de chargement (ETL) des données. Il récupère automatiquement les données provenant du fichier CSV et de MySQL, calcule les indicateurs médicaux, génère les documents nécessaires et alimente les bases de données utilisées par les applications métiers.
+L'ETL1 répond à la compétence C1 car il automatise l'ensemble du processus d'extraction, de transformation et de chargement des données. Il centralise les données provenant des fichiers CSV et de MySQL, produit automatiquement les indicateurs médicaux, les rapports et les visualisations, puis alimente les bases de données utilisées par les applications métiers et les traitements analytiques.
+
 ### Lola
 **C2.Développer les requêtes de type SQL d'extraction des données** depuis un système de gestion de base de données et un système big data en appliquant le langage de requête propre au système afin de préparer la collecte des données nécessaires au projet.
 
@@ -454,9 +456,6 @@ router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
 ```
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
-C14. **Analyser le besoin d'application d'un commanditaire intégrant un service d'intelligence artificielle**, en rédigeant les spécifications fonctionneles et en le modélisant, dans le respect des standards d'utilisabilité et d'accessibilité, afin d'établir avec précision les objectifs de développement correspondant au besin et à la faisabilité technique.
-- ETL 1: est une interface qui répond aux besoins du médecin validateur d'avoir toutes les informations nécéssaires pour poser une diagnostique sur le patient et de pouvoir poser son diagnostic et de valider sur le même interface.
-- ETL 3: permet en lien avec l'ETL1 d'automatiser l'alimentation de la base de données analytique pour l'entrainement de l'IA. Car plus celle-ci sera alimenter par les données de la clinique plus son taux de fiabilité pour les diagnostics (Obésité etc.), sera fiable.
 # C14 – Analyser le besoin et modéliser l'application
 
 ## Contexte
@@ -484,7 +483,7 @@ Cette modélisation permet de comprendre le fonctionnement global du système :
 5. L'ETL1 traite les données, calcule les indicateurs médicaux, met à jour MySQL, génère le rapport médical, les courbes et alimente le datalake SQLite.
 6. Le médecin consulte ensuite les résultats dans l'application Résultats avec IA, ajoute son commentaire et valide le diagnostic.
 7. Cette validation déclenche automatiquement l'ETL3, qui alimente la base analytique (modèle galaxie).
-8. La base analytique est ensuite utilisée par le Dashboard CPAP ainsi que par le module de prédiction des comorbidités basé sur un modèle Random Forest.
+8. La base analytique est ensuite utilisée par le Dashboard CPAP pour les analyses et par le module IA Comorbidités, qui entraîne un modèle Random Forest afin de prédire les comorbidités les plus probables.
 
 ---
 
@@ -496,7 +495,7 @@ Cette modélisation permet de comprendre le fonctionnement global du système :
 
 ### User Story 2
 
-**En tant que médecin**, je souhaite consulter les résultats de la nuit, confirmer le diagnostic et générer le PDF du patient afin d'alimenter la base analytique utilisée par le service d'intelligence artificielle.
+**En tant que médecin**, je souhaite consulter les résultats de la nuit, confirmer le diagnostic et générer le PDF du patient afin d'alimenter automatiquement la base analytique utilisée par le module IA Comorbidités.
 
 ---
 
@@ -525,7 +524,6 @@ Les applications ont été conçues en respectant des principes simples d'utilis
 ## Conclusion
 
 Cette analyse fonctionnelle nous a permis de définir les besoins métier, de modéliser le parcours utilisateur et d'identifier précisément le rôle des applications, des pipelines ETL et des bases de données avant le développement du projet.
-
 
 ### Lola
 C15. **Concevoir le cadre technique d'une application integrant un service d'intelligence artificielle**, à partir de l'analyse du besoin, en spécifiant l'architecture technique et applicative et en préconisant les outils et méthodes de développement, pour permettre le développement du projet.

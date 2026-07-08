@@ -17,7 +17,7 @@
 
 ## Responsable du traitement
 
-Le Centre du Sommeil est responsable des traitements réalisés dans le cadre :
+La Clinique du Sommeil est responsable des traitements réalisés dans le cadre :
 
 * de la consultation médicale ;
 * du diagnostic ;
@@ -48,12 +48,10 @@ Gestion des admissions, rendez-vous, création du dossier patient, facturation.
 
 **Données**
 
-* identité
-* coordonnées
-* sécurité sociale
-* couverture sociale
-* médecin traitant
-* personne de confiance
+* identité : nom, prénom, date de naissance, sexe
+* coordonnées : adresse, téléphone, email
+* sécurité sociale : NIR
+
 
 **Destinataires**
 
@@ -71,8 +69,8 @@ Suivi médical.
 
 **Données**
 
-* antécédents
-* traitements
+* fumeur
+
 * examens
 * comptes rendus
 * allergies

@@ -1,6 +1,8 @@
 # RAPPORT DE REALISATION D'ETLs MULTIPLES SUR UN WORKFLOW D'ETUDE HOSPITALIERE
 
-Ce projet d'ETL en 3 phases à destination des 
+Ce projet d'ETL en 3 phases à destination des personnels de la Clinique du Sommeil d'Arles intègre plusieurs applications ainsi que plusieurs sources de données, de bonnes qualités généralement. Cette API, intégrée au système d'information permettra aux infirmiers, médecins, patients, personnels non-soignants et fournisseurs d'appareils de bénéficier d'un accès simple aux données dont chacun.e a besoin afin de pratiquer son métier efficacement. Par ailleurs, cette API intégrant un modèle d'IA permettra également d'analyser et d'émettre des prédictions quant aux alertes et schémas physiologiques décelables qui pourraient expliquer l'occurrence des alertes.
+
+Le flux de travail que nous proposons avec cette API implique une Base de Données Relationnelle (mysql), des fichiers CSV provenant des appareils et relevés de somnographies et polygraphies, une base_analytique ainsi qu'un datalake locaux à des fins d'analyse, d'entraînement du modèle et d'anonymisation des données.
 
 ## C1, C2 : extraction et requêtes SQL (rappel ETL1, ETL3, mini ETL CPAP)
 C1 . **Automatiser l'extraction de données** depuis un service web, une page web (scraping*), un fichier de données, une base de données et un système big data* en programmant le script* adapté afin de pérenniser la collecte des données nécessaires au projet. 

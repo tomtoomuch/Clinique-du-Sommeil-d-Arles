@@ -164,7 +164,7 @@ def charger_fait_nuit(id_patient, conn_sqlite):
     conexion_mysql = get_mysql_connection()
 
     df = pd.read_sql(
-    "call cliniquesommeil2.recuperation_donnees_pour_faits_nuit_base_analytique(%s)",
+    "call nuitsommeil2.recuperation_donnees_pour_faits_nuit_base_analytique(%s)",
     conexion_mysql,
     params=[id_patient]
 )

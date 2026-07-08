@@ -2,20 +2,167 @@
 
 Ce projet d'ETL en 3 phases à destination des personnels de la Clinique du Sommeil d'Arles intègre plusieurs applications ainsi que plusieurs sources de données, de bonnes qualités généralement. Cette API, intégrée au système d'information permettra aux infirmiers, médecins, patients, personnels non-soignants et fournisseurs d'appareils de bénéficier d'un accès simple aux données dont chacun.e a besoin afin de pratiquer son métier efficacement. Par ailleurs, cette API intégrant un modèle d'IA permettra également d'analyser et d'émettre des prédictions quant aux alertes et schémas physiologiques décelables qui pourraient expliquer l'occurrence des alertes.
 
-Le flux de travail que nous proposons avec cette API implique une Base de Données Relationnelle (mysql), des fichiers CSV provenant des appareils et relevés de somnographies et polygraphies, une base_analytique ainsi qu'un datalake locaux à des fins d'analyse, d'entraînement du modèle et d'anonymisation des données.
+Le flux de travail que nous proposons avec cette API implique une Base de Données Relationnelle (mysql), des fichiers CSV provenant des appareils et relevés de somnographies et polygraphies, une base_analytique ainsi qu'un datalake locaux à des fins d'analyse, d'entraînement du modèle et d'anonymisation des données. Il s'articule autour de 3 processus d'ETL et se structure ainsi :
+
+![Modélisation pipeline-complet](./img/logique-clinique-sommeil.jpg "Diagramme logique du projet d'ETL pour la Clinique du Sommeil d'Arles")
 
 ## C1, C2 : extraction et requêtes SQL (rappel ETL1, ETL3, mini ETL CPAP)
 C1 . **Automatiser l'extraction de données** depuis un service web, une page web (scraping*), un fichier de données, une base de données et un système big data* en programmant le script* adapté afin de pérenniser la collecte des données nécessaires au projet. 
- 
+
+# Présentation globale du projet
+
+Le projet repose sur trois applications métiers, une API REST développée avec Express et trois pipelines ETL permettant d'automatiser le traitement des données des nuits d'étude et du suivi CPAP.
+
+Il s'articule autour des trois applications suivantes :
+
+- **Application Opérateur** : permet à l'infirmier de sélectionner une nuit d'étude à traiter, choisir le médecin validateur, saisir un commentaire médical et lancer automatiquement l'ETL1.
+
+- **Application Résultats Nuit avec IA** : permet de consulter les résultats de la nuit, visualiser les courbes et le rapport médical, afficher une prédiction de comorbidités grâce à un modèle Random Forest, ajouter le commentaire du médecin, valider le diagnostic, déclencher l’ETL3 et générer automatiquement le PDF du patient.
+
+- **Dashboard CPAP** : permet de suivre quotidiennement les patients traités par CPAP, consulter les alertes, les indicateurs de suivi et les statistiques d'utilisation.
+
+Pour alimenter ces applications, trois pipelines ETL ont été développés :
+
+- **ETL1** traite une nuit d'étude complète à partir du fichier CSV des capteurs et des événements respiratoires stockés dans MySQL. Il calcule les indicateurs médicaux, alimente la base opérationnelle MySQL, génère le rapport médical et les courbes, puis alimente le datalake SQLite avec les données brutes et les données préparées.
+
+- **ETL2** importe les données quotidiennes de suivi CPAP depuis un fichier CSV, calcule automatiquement les alertes métier (observance < 4 h et IAH résiduel > 5) et alimente la table faits_suivi_cpap_jour de la base analytique SQLite. Ces données sont ensuite exploitées par le Dashboard CPAP.
+
+-  **ETL3** extrait les données médicales validées de la base opérationnelle MySQL et alimente la base analytique SQLite (modèle galaxie).Cette base est exploitée par le Dashboard CPAP pour les analyses et par le module IA Comorbidités, qui utilise ces données historiques pour entraîner un modèle Random Forest capable de prédire les comorbidités les plus probables d'un patient.
+
+## Focus sur l'ETL1
+
+### Objectif
+
+L'ETL1 automatise le traitement complet d'une nuit d'étude polysomnographique. Il est lancé depuis l'application Opérateur après que l'infirmier sélectionne une nuit, choisisse le médecin validateur et saisisse un commentaire infirmier.
+
+---
+
+## Technologies utilisées
+
+- Python
+- Pandas
+- MySQL
+- SQLite (Datalake)
+- Matplotlib
+- Streamlit (prototype) 
+- Angular
+- Express (API REST)
+- Git / GitHub
+
+---
+
+## Fonctionnement de l'ETL
+
+### 1. Extraction
+
+Le pipeline recherche automatiquement le fichier CSV correspondant à l'identifiant de la nuit, puis le charge avec Pandas.
+
+```bash
+chemin_csv, id_patient = trouver_csv_depuis_id_nuit(id_nuit)
+
+df = lire_csv_capteur(chemin_csv)
+```
+
+Le script vérifie également que le fichier existe et que toutes les colonnes obligatoires sont présentes.
+
+---
+
+### 2. Transformation
+
+Les indicateurs médicaux sont calculés automatiquement à partir du signal :
+
+- SpO₂ minimale, moyenne et médiane
+- durée d'hypoxie
+- position dominante
+- intensité des ronflements
+- nombre de ronflements forts
+
+```bash
+def calculer_indicateurs_signal(df, duree_nuit_min):
+```
+
+Cette fonction transforme les données brutes du capteur en indicateurs médicaux (SpO₂, IAH, hypoxie, ronflements, position dominante…) qui seront enregistrés dans MySQL.
+---
+
+### 3. Chargement
+
+Les indicateurs sont transmis à une procédure stockée MySQL afin de créer le résultat médical de la nuit.
+
+```bash
+curseur.callproc(
+    "sp_creer_resultat_nuit",
+    [...]
+)
+```
+
+Le pipeline génère ensuite :
+
+- le rapport médical (.txt),
+- les courbes (PNG),
+- l'alimentation du datalake SQLite (raw_capteur et curated_nuit).
+
+```bash
+generer_rapport_texte(resultat, dossier_sortie)
+
+generer_courbes(df, id_nuit, dossier_sortie)
+
+initialiser_datalake()
+
+alimenter_raw_capteur(df, id_nuit)
+
+alimenter_curated_nuit(id_nuit, resultat)
+
+```
+
+---
+
+### 4. Gestion des erreurs
+
+Le pipeline prévoit une gestion des erreurs afin d'assurer la fiabilité du traitement.
+
+- fichier CSV introuvable ;
+- erreur lors de l'exécution des opérations MySQL.
+
+Exemples :
+
+```bash
+if not os.path.exists(chemin_fichier):
+    raise FileNotFoundError(
+        f"Le fichier {chemin_fichier} est introuvable."
+    )
+
+
+except MySQLError as erreur:
+    raise RuntimeError(
+        f"Erreur MySQL lors de l'appel à la procédure stockée : {erreur}"
+    ) from erreur
+```
+
+---
+
+## Résultat obtenu
+
+À la fin de l'exécution :
+
+- le résultat médical est enregistré dans **MySQL** ;
+- le rapport et les courbes sont générés automatiquement ;
+- le datalake SQLite est alimenté ;
+- le fichier CSV est déplacé dans le dossier `raw/traite`.
+
+
+## Conclusion
+
+L'ETL1 répond à la compétence C1 car il automatise l'ensemble du processus d'extraction, de transformation et de chargement des données. Il centralise les données provenant des fichiers CSV et de MySQL, produit automatiquement les indicateurs médicaux, les rapports et les visualisations, puis alimente les bases de données utilisées par les applications métiers et les traitements analytiques.
+
 ### Lola
 **C2.Développer les requêtes de type SQL d'extraction des données** depuis un système de gestion de base de données et un système big data en appliquant le langage de requête propre au système afin de préparer la collecte des données nécessaires au projet.
 
 
 **Alimentation_base_analytique**
-Ce fichier est un ETL(3) qui a pour object d'alimenter la base_analytique.db avec les données de la base de donnée relationnelle de la Clinique du Sommeil d'Arles (cliniquenuitscompletes.sql).
+Ce fichier est un ETL(3) qui a pour objectif d’alimenter la base_analytique.db avec les données de la base de données relationnelle de la Clinique du Sommeil d’Arles (cliniquenuitscompletes.sql).
 
   - Connexion du fichier à MySQL : 
-*Nous avons choisi pour cette connexion de la sécuriser en mettant les données en dure (mot de passe, port et non de la base) dans un fichier non suivi par Git.* 
+*Nous avons choisi de sécuriser cette connexion en plaçant les données sensibles en dur (mot de passe, port et non de la base) dans un fichier non suivi par Git.* 
 
 ```bash
 import mysql.connector
@@ -38,7 +185,7 @@ connexion = sqlite3.connect(chemin_db)
 connexion.commit()
 curseur.close()
 ```
-   - Requête d'alimentation dim_temps : Afin d'alimenter la table dim_temps nous faisons cette requête directement stocké dans l'ETL car aucune donnée ne vient ici de MySQL. 
+   - Afin d’alimenter la table dim_temps, nous exécutons cette requête directement depuis l’ETL, car aucune donnée ne provient ici de MySQL.
 ```bash
 def charger_dim_temps (conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -107,7 +254,7 @@ def charger_dim_temps (conn_sqlite):
 
 ```
 
-   - Requête récupération des données MySQL pour alimenter la table dim_patient :
+- Requête de récupération des données MySQL pour alimenter la table dim_patient :
 
 ```bash
 def charger_dim_patient(id_patient, conn_sqlite):
@@ -222,7 +369,7 @@ BEGIN
 END
 ```
    
-   - Appel de la procédure stocké "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
+- Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -283,38 +430,278 @@ def charger_fait_nuit(id_patient, conn_sqlite):
 ## C4 : modélisation des données (schéma Galaxy + dimsuivipatient)
 
 **Créer une base de données** dans le respect du RGPD en élaborant les modèles conceptuels et physiques des données à partir des données préparées et en programmant leur import afin de stocker le jeu de données du projet.
-- Non réaliser pour le moment
+[Modèle relationnel de données](./modele_relationnel_donnees.pdf)
+Nos services recommandent l'usage d'une base_analytique plus adaptée à l'entraînement d'IA. Celle-ci est composée des même données que notre base MySQL mais le modèle utilisé pour leur stockage est un modèle en étoile.
+
+Pour ce projet, il est question de convertir notre modèle relationnel en modèle multidimensionnel. Nous avons d'abord établit les tables de faits en identifiant les données qui nous permettent de faire des liens entre les tables et qui sont communs aux tables de faits afin de dégager des dimensions pour notre modèle étoilé.
+
+En étudiant le schéma de la base relationnelle ainsi que le fonctionnement des ETL, nous pouvons partir du principe que la notion de 'nuit' régit le premier ETL.
+```
+PATIENT --------------------- NUIT_ETUDE ---------------- APPAREIL_PSG
+                                 |
+                          id_nuit (PK)
+                          date
+                          type
+                          ...
+                                 │
+                                 │
+                ┌────────────────┴─────────────┐
+                │                              │
+                ▼                              ▼
+
+      RESULTAT_NUIT               EVENEMENT_RESPIRATOIRE
+      ----------------            ------------------------
+      id_resultat (PK)            id_evenement (PK)
+      IAH                         type
+      saturation                  durée
+      sommeil                     heure
+```
+
+Toutefois, c'est bien la notion de 'patient' qui régit les 2 ETL suivants.
+```
+PATIENT -------------------- APPAREIL_CPAP ------------- APPAREIL
+                                  |
+                          id_appareil (PK/FK)
+                          pression
+                          masque
+                          ...
+                                  │
+                                  │
+                 ┌────────────────┴────────────────┐
+                 │                                 │
+                 ▼                                 ▼
+
+      SUIVI_CPAP_JOUR                BILAN_MENSUEL_CPAP
+      -----------------              --------------------
+      id_suivi (PK)                  id_bilan (PK)
+      date                           année
+      durée                          mois
+      IAH                            observance
+      fuite                          ...
+```
+
+Il est ensuite important de procéder à la modélisation des données en étoile pour concevvoir la base de données analytique.
+
+Autour des tables de faits, nous identifions les dimensions 'nuit', 'temps', 'patient' et 'suivi' qui permet d'aggréger les données de suivi pour analyse.
+
+[Modèle-Etoile](./Modèle étoile faits nuits.pdf)
 
 
 ## C5 : API/accès aux données (procédures stockées utilisées)
+
 **Développer une API mettant à disposition le jeu de données** en utilisant l'architecture REST afin de permettre l'exploitation du jeu de données par les autres composants du projet.
-- ?
+
+Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ (API Node.js) et _frontend_ (Angular/Streamlit) ainsi qu'avec nos stockages de données (SQL, SQLite).
+
+Le parcours de l'utilisateur peut être schématisé ainsi :
+```
+                                PERSONNEL
+                           -------------------
+                           id_personnel (PK)
+                           nom
+                           prénom
+                           ...
+                              ▲
+                 ┌────────────┴─────────────┐
+                 │                          │
+             MEDECIN                  INFIRMIER
+          id_personnel (PK)        id_personnel (PK)
+
+
+                                  │
+                                  │ réalise
+                                  │
+                                  ▼
+
+PATIENT --------------------- CONSULTATION -------------------- MEDECIN
+---------                     ----------------                 ---------
+id_patient (PK)           id_consultation (PK)          id_personnel (FK)
+nom                        date_consultation
+prénom                     motif
+date_naissance             compte_rendu
+...
+   │
+   │ possède
+   ▼
+
+COMORBIDITE
+-----------------------
+id_comorbidite (PK)
+libellé
+
+       ▲
+       │
+       │ N:N
+       │
+PATIENT_COMORBIDITE
+-----------------------
+id_patient (FK)
+id_comorbidite (FK)
+```
+
+Notre configuration de l'API Node.js permet de proposer un point d'entréee principal qui invite à s'authentifier afin d'accéder aux fonctionnalités des ETL et de visualisation des données.
+
+```ts
+router.post('/login', loginController.connexionUtilisateur);
+```
+La route ```/login``` permet donc à Angular d'interroger la base de données afin d'authentifier l'utilisateur en foncction de son adresse électronique et son mot de passe. Si l'utilisateur existe et qu'il renseigne le bon mot de passe, il accède aux interfaces utilisateurs suivantes.
+
+```ts
+router.get('/job', loginController.findJob);
+```
+La route ```/job``` est configurée afin d'être sollicitée par Angular qui utilise ce canal pour récupérer le rôle de l'utilisateur et appliquer les permissions d'accès aux données.
+
+```ts
+router.get('/getPersonnel', loginController.getPersonnel);
+router.get('/getInfoPersonnel', loginController.getInfoPersonnel);
+router.post('/changeNamePersonnel', loginController.changeNamePersonnel);
+router.post('/changePrenomPersonnel', loginController.changePrenomPersonnel);
+router.post('/changeEmailPersonnel', loginController.changeEmailPersonnel);
+router.post('/changePhonePersonnel', loginController.changePhonePersonnel);
+router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
+```
+Ces routes supplémentaires permettent de récupérer rapidement des données, notamment, pour les services administratifs de la Clinique.
+
+2 routes supplémentaires ont été ajoutées à l'A.P.I. afin d'offrir la possibilité à l'infirmier et au médecin de pouvoir lancer les différents phases d'ETL depuis l'interface utilisateur Angular.
+
+L'utilisateur appuie sur "Lancer l'ETL1"
+![UI Opérateur ETL1](./img/analyse_nuit_angular.png "Interface utilisateur Angular pour commander l'exécution du premier ETL qui alimente la table SQL Résultat_nuit")
+
+L'appli _frontend_ envoie une requête HTTP contenant les 3 paramètres à transmettre au script d'ETL vers l'API Node.js.
+```js
+router.get('/lancerETL1', lancerScript);
+
+function lancerScript(req, res) {
+
+    const pythonProcess = spawn('python', [
+        "./pipeline_etl_pandas.py",
+        req.query.id_nuit,
+        req.query.id_medecin_validateur,
+        req.query.commentaire_medical
+       
+    ]);
+```
+L'API _backend_ valide l'exécution de l'ETL et notifie du bon déroulement de son lancement à l'appli _frontend_.
+
+```ts
+this.routes.lancerETL1(
+      selectedNuit.id_nuit,
+      selectedMedecin.id_personnel,
+      comment
+    ).subscribe({
+      next: (res) => {
+        console.log("ETL lancé :", res);
+
+        // reset après succès
+        this.commentForm.reset();
+      },
+      error: (err) => {
+        console.error("Erreur ETL :", err);
+        console.log(err.error);}
+    });
+```
 
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
-C14. **Analyser le besoin d'application d'un commanditaire intégrant un service d'intelligence artificielle**, en rédigeant les spécifications fonctionneles et en le modélisant, dans le respect des standards d'utilisabilité et d'accessibilité, afin d'établir avec précision les objectifs de développement correspondant au besin et à la faisabilité technique.
-- ETL 1: est une interface qui répond aux besoins du médecin validateur d'avoir toutes les informations nécéssaires pour poser une diagnostique sur le patient et de pouvoir poser son diagnostic et de valider sur le même interface.
-- ETL 3: permet en lien avec l'ETL1 d'automatiser l'alimentation de la base de données analytique pour l'entrainement de l'IA. Car plus celle-ci sera alimenter par les données de la clinique plus son taux de fiabilité pour les diagnostics (Obésité etc.), sera fiable.
+# C14 – Analyser le besoin et modéliser l'application
 
+## Contexte
+
+Avant de développer les applications, nous avons réalisé une analyse fonctionnelle afin d'identifier les besoins des utilisateurs, les différentes étapes du traitement et les interactions entre les applications, les pipelines ETL et les bases de données.
+
+L'objectif est de garantir un parcours utilisateur cohérent avant le développement technique.
+
+---
+
+## Architecture fonctionnelle
+
+La figure suivante présente l'architecture fonctionnelle du projet ainsi que le parcours utilisateur, les applications développées, les pipelines ETL et les interactions entre les différentes bases de données.
+
+![Architecture fonctionnelle du projet](architecture_c14.png)
+
+*Figure 1 – Architecture fonctionnelle du projet Clinique du Sommeil d'Arles.*
+
+Cette modélisation permet de comprendre le fonctionnement global du système :
+
+1. Le patient réalise une nuit d'étude.
+2. Les événements respiratoires sont enregistrés dans MySQL et les données des capteurs sont récupérées depuis un fichier CSV.
+3. L'opérateur sélectionne la nuit, choisit le médecin validateur et ajoute un commentaire infirmier.
+4. L'application Opérateur déclenche automatiquement l'ETL1.
+5. L'ETL1 traite les données, calcule les indicateurs médicaux, met à jour MySQL, génère le rapport médical, les courbes et alimente le datalake SQLite.
+6. Le médecin consulte ensuite les résultats dans l'application Résultats avec IA, ajoute son commentaire et valide le diagnostic.
+7. Cette validation déclenche automatiquement l'ETL3, qui alimente la base analytique (modèle galaxie).
+8. La base analytique est ensuite utilisée par le Dashboard CPAP pour les analyses et par le module IA Comorbidités, qui entraîne un modèle Random Forest afin de prédire les comorbidités les plus probables.
+
+---
+
+## User Stories
+
+### User Story 1
+
+**En tant qu'opérateur**, je souhaite sélectionner une nuit d'étude, choisir un médecin validateur et lancer automatiquement le traitement afin de générer le rapport médical.
+
+### User Story 2
+
+**En tant que médecin**, je souhaite consulter les résultats de la nuit, confirmer le diagnostic et générer le PDF du patient afin d'alimenter automatiquement la base analytique utilisée par le module IA Comorbidités.
+
+---
+
+## Critères d'acceptation
+
+Le scénario est considéré comme valide lorsque :
+
+- le diagnostic est confirmé ;
+- le PDF du patient est généré ;
+- l'ETL3 est exécuté automatiquement ;
+- la base analytique est correctement alimentée.
+
+---
+
+## Accessibilité
+
+Les applications ont été conçues en respectant des principes simples d'utilisabilité :
+
+- navigation intuitive ;
+- boutons clairement identifiés ;
+- vocabulaire compréhensible ;
+- limitation du nombre d'étapes pour chaque utilisateur.
+
+---
+
+## Conclusion
+
+Cette analyse fonctionnelle nous a permis de définir les besoins métier, de modéliser le parcours utilisateur et d'identifier précisément le rôle des applications, des pipelines ETL et des bases de données avant le développement du projet.
 
 ### Lola
 C15. **Concevoir le cadre technique d'une application integrant un service d'intelligence artificielle**, à partir de l'analyse du besoin, en spécifiant l'architecture technique et applicative et en préconisant les outils et méthodes de développement, pour permettre le développement du projet.
 
 1. Identifier les besoins :
-Cette interface s'adresse au médecin validateur désigné par l'oppérateur, pour lui permettre de visualiser toutes les informations de la nuit d'étude (rapport résultats de la nuit d'étude, la courbe spO2, la courbe du débit nasal et la courbe des ronflements). Mais aussi d'avoir une aide au diagnostic avec l'interprétation de l'IA basée sur les commorbidité du patient. Enfin toujours sur cette interface le médecin validateur pourra poser un diagnostic (via un commentaire médical de validation) et valider le rapport final. Rapport final qui sera par la suite enregistré dans le dossier du patient et téléchargé par le médecin.
+Cette interface s’adresse au médecin validateur désigné par l’opérateur. Elle lui permet de visualiser toutes les informations relatives à la nuit d’étude : le rapport de résultats, la courbe SpO₂, la courbe du débit nasal et la courbe des ronflements.
+
+Elle offre également une aide au diagnostic grâce à l’interprétation de l’IA, basée sur les comorbidités du patient.
+
+Enfin, depuis cette interface, le médecin validateur peut poser un diagnostic, via un commentaire médical de validation, puis valider le rapport final. Ce rapport sera ensuite enregistré dans le dossier du patient et téléchargé par le médecin.
 
 2. Choisir la technologie
-   - Pour l'application du médecin validateur on a choisit d'utiliser Streamlit, qui permet d'avoir rapidement une interface. 
-
-   - Il faut également choisir l'IA qui est la plus adapré aux besoins identifiés précédemment. Ici nous utilisons l'IA de Random Forest, pour une application médicale. Random Forest (RF) est l'un des algorithmes les plus utilisés en IA médicale grâce à sa robustesse et son interprétabilité. On l'a choisi également car elle a un taux de réussite de 85% à 93% sur les prédictions des apnées du sommeil.
+   - Pour l’application du médecin validateur, nous avons choisi d’utiliser Streamlit, qui permet de créer rapidement une interface.
+   - Il faut également choisir l’IA la plus adaptée aux besoins identifiés précédemment. Ici, nous utilisons l’algorithme Random Forest pour une application médicale. Random Forest (RF) est l’un des algorithmes les plus utilisés en IA médicale grâce à sa robustesse et à son interprétabilité. Nous l’avons également choisi car il présente un taux de réussite de 85 % à 93 % pour la prédiction des apnées du sommeil.
 
 3. Architecture technique 
-   - Création d'une application pour consulter les résultats et des nuits d'étude
-   - Création d'un ETL (alimentation_base_analytique) afin de continuer à l'alimenter le modèle pour augmenter sa fiabilité.
+   - Création d’une application permettant de consulter les résultats des nuits d’étude.
+   - Création d’un ETL (alimentation_base_analytique) afin de continuer à alimenter le modèle et d’augmenter sa fiabilité.
 
-4. Préconisation : 
-   - Concernant l'interface elle est actuellement lente, si on souhaite partir sur une interface plus performante il faudra partir sur le même modèle que l'application Opérateur et utiliser de l'Angular.
-   - Concernant l'utilisation de l'IA, continuer à l'alimenter avec les données récoltées. Impliquer les médecins dans l'entrainement de l'IA notamment pour l'interprétation des résultats de l'IA (prendre en concidération les dernières recherches).
+4. Préconnisation : 
+   - Concernant l’interface, elle est actuellement lente. Si l’on souhaite partir sur une interface plus performante, il faudra suivre le même modèle que l’application Opérateur et utiliser Angular.
+   - Dans le cadre de l’utilisation de l’IA pour prédire les comorbidités dans une clinique du sommeil, plusieurs préconisations peuvent être formulées:
+     - Tout d’abord, les variables actuellement utilisées pour alimenter le modèle Random Forest semblent insuffisamment larges. Les features utilisées sont principalement liées aux données respiratoires et physiologiques de la nuit d’étude : IAH, SpO₂ minimale, SpO₂ moyenne, nombre d’apnées, nombre d’hypopnées, durée du sommeil, IMC, tabagisme et consommation de tabac.
+     Or, pour améliorer la fiabilité du modèle, il serait pertinent d’intégrer d’autres variables importantes, comme l’âge, le genre, les antécédents médicaux, les traitements en cours, les pathologies déjà connues, les habitudes de vie, les symptômes déclarés par le patient ou encore certains facteurs cardiovasculaires et métaboliques.
+     - Cette limite pose également une question éthique : un modèle entraîné avec un nombre restreint de variables risque de produire des prédictions incomplètes, voire biaisées. Par exemple, si certaines catégories de patients sont sous-représentées dans les données d’entraînement, le modèle peut être moins performant pour ces profils. Cela peut entraîner une inégalité dans l’aide au diagnostic proposée aux médecins.
+     Il est donc nécessaire de vérifier la représentativité des données utilisées pour entraîner l’IA. Les données doivent couvrir des profils variés de patients, notamment en termes d’âge, de sexe, d’IMC, d’antécédents médicaux et de sévérité des troubles du sommeil.
+     - La fiabilité du modèle doit également être contrôlée régulièrement. Même si Random Forest est un algorithme robuste et interprétable, ses prédictions ne doivent pas être considérées comme un diagnostic automatique. L’IA doit rester un outil d’aide à la décision, et non un substitut au jugement médical. La décision finale doit toujours appartenir au médecin validateur.
+     - Il est également important de mettre en place une évaluation continue du modèle. Le taux de réussite global ne suffit pas : il faut aussi analyser les faux positifs, les faux négatifs, la sensibilité, la spécificité et les performances selon différents groupes de patients. Dans un contexte médical, une erreur de prédiction peut avoir des conséquences importantes sur la prise en charge du patient.
+     - Un autre enjeu éthique concerne la transparence. Le médecin doit pouvoir comprendre les grandes raisons qui ont conduit l’IA à proposer une prédiction. Il est donc recommandé d’accompagner les résultats de l’IA avec des indicateurs explicatifs, comme l’importance des variables utilisées par le modèle.
+     - Enfin, l’utilisation de données médicales impose une vigilance particulière concernant la protection des données personnelles. Les données doivent être sécurisées, limitées aux informations strictement nécessaires, et utilisées dans le respect du RGPD. Il est aussi important d’informer les patients de l’utilisation possible de leurs données dans le cadre de l’amélioration du modèle.
+
     
 
 ## C16,C17 : réalisation technique (composants développés)
@@ -476,7 +863,6 @@ ngOnInit(): void {          //Fonctions qui seront exécutées dès le chargemen
 - Pour la partie Back-End : 
 
     - Python pour le nettoyage des données, le calcul des indicateurs, la création du rapport médical, la génération des courbes, l'enregistrement des données dans un datalake, l'alimentation d'une base sqlite analytique
-
 ```
 ```
     Exemple d'une fonction python permettant l'alimentation d'une table de la base analytique en calculant des alertes :
@@ -527,7 +913,7 @@ def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, date_jour, dure
         connexion.close()  #fermeture de la connexion
 ```
 
-
+```bash
     - JavaScript avec Express et NodeJs pour la création de l'API permettant l'utilisation de routes et requètes nécessaires à la communication entre le front et le back
 
     - Streamlit pour les résultats des nuits avec prédiction de comorbidités
@@ -552,9 +938,11 @@ Problème rencontré dans l'exécussion de l'ETL (alimentation_base_analytique) 
 ```bash
 sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 21152 and this is thread id 17492.
 ```
-Le problème que nous avons rencontré ici est un conflit entre notre application Streamlit et Sqlite. Sqlite bloque, car Streamlit utilise un autre thread que la connexion sqlite. 
-Pour remédier à ce problème nous avons consulter tchatGPT qui nous a conseillé de changer notre connexion Sqlite dans notre ETL, passer d'un niveau global au niveau des fonctions.
-Nous avons donc supprimé la connexion global et nous avons intégré à chaque fonction lancé par l'ETL :
+Le problème rencontré ici est un conflit entre notre application Streamlit et SQLite. SQLite bloque l’exécution, car Streamlit utilise un autre thread que celui de la connexion SQLite.
+
+Pour remédier à ce problème, nous avons consulté ChatGPT, qui nous a conseillé de modifier la gestion de la connexion SQLite dans notre ETL, en la passant d’un niveau global au niveau des fonctions.
+
+Nous avons donc supprimé la connexion globale et nous l’avons intégrée dans chaque fonction lancée par l’ETL :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()

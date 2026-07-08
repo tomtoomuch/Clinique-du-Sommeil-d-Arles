@@ -70,10 +70,10 @@ Suivi médical.
 **Données**
 
 * fumeur
-
+* conso alcool
 * examens
 * comptes rendus
-* allergies
+* comorbidités
 * paramètres cliniques
 
 ---
@@ -85,13 +85,9 @@ Suivi médical.
 * polygraphie
 * polysomnographie
 * oxymétrie
-* fréquence cardiaque
-* saturation
-* débit respiratoire
+* tension systolique et diastolique
+* évènements respiratoires
 * mouvements thoraciques
-* EEG
-* EMG
-* EOG
 
 ---
 
@@ -108,7 +104,7 @@ Prescription du dispositif médical.
 * prescription
 * diagnostic
 * paramètres de pression
-* compte rendu médical
+* compte rendu médical ??
 * niveau de sévérité de l'apnée
 * informations administratives nécessaires à la prise en charge
 
@@ -121,19 +117,14 @@ Prescription du dispositif médical.
 
 # Traitement 5 – Installation du dispositif PPC (Prestataire)
 
-Ce traitement est généralement réalisé sous la responsabilité propre du prestataire de santé à domicile.
+Ce traitement est généralement réalisé sous la responsabilité propre du prestataire de santé à domicile. Ces données sont transmises depuis les relevés de la machine du prestataire à la Clinique du Sommeil.
 
 ## Données traitées
 
 * coordonnées
 * adresse d'installation
-* disponibilité du patient
-* historique des interventions
 * numéro de série de l'appareil
 * masque utilisé
-* accessoires fournis
-* compte rendu d'installation
-* formation du patient
 
 ## Finalités
 
@@ -155,7 +146,7 @@ Le dispositif peut transmettre automatiquement :
 * pression délivrée
 * fuites
 * évènements respiratoires
-* qualité du masque
+* type de masque
 * alertes techniques
 * données de fonctionnement
 
@@ -167,34 +158,15 @@ Suivi thérapeutique.
 
 ### Prestataire
 
-Maintenance.
+Maintenance. Observance.
 
 ### Fabricant (selon le modèle)
 
 Maintenance des plateformes connectées.
 
-### Hébergeur HDS
-
-Stockage sécurisé.
-
 ---
 
-# Traitement 7 – Maintenance du matériel
-
-Le PSAD collecte :
-
-* incidents
-* remplacement des masques
-* changement des tuyaux
-* interventions techniques
-* visites à domicile
-* historique SAV
-
-Ces traitements sont distincts du suivi médical.
-
----
-
-# Traitement 8 – Suivi de l'observance
+# Traitement 7 – Suivi de l'observance
 
 Objectifs :
 
@@ -275,7 +247,7 @@ Transmission :
 * coordonnées
 * diagnostic
 * paramètres PPC
-* urgence éventuelle
+* urgence éventuelle (liée à la sévérité du diagnostic)
 
 ## Prestataire → Centre
 
@@ -285,10 +257,8 @@ Transmission :
 * incidents
 * observance
 * difficultés du patient
-* remplacement du matériel
-* alertes
 
-## Appareil → Plateforme HDS
+## Appareil → Plateforme HDS (pas valable lors du prototypage)
 
 Transmission automatique :
 
@@ -300,33 +270,13 @@ Transmission automatique :
 
 Accès sécurisé des professionnels habilités.
 
-## Plateforme HDS → Prestataire
-
-Accès limité aux données nécessaires à la maintenance et au suivi logistique.
-
----
-
-# Base juridique
-
-## Centre du sommeil
-
-* exécution de la mission de soins ;
-* obligations légales ;
-* prise en charge médicale.
-
-## Prestataire de santé à domicile
-
-* exécution du contrat de fourniture et de maintenance du dispositif médical ;
-* obligations réglementaires ;
-* continuité des soins.
-
 ---
 
 # Mesures de sécurité
 
 ## Organisationnelles
 
-* gestion des habilitations
+* gestion des utilisateurs, des rôles et permissions
 * politique de mots de passe
 * confidentialité contractuelle
 * formation RGPD
@@ -334,8 +284,8 @@ Accès limité aux données nécessaires à la maintenance et au suivi logistiqu
 
 ## Techniques
 
-* hébergement HDS
-* authentification multifacteur
+* hébergement HDS (pas valable lors du prototypage)
+* authentification multifacteur (pas valable lors du prototypage)
 * chiffrement TLS
 * journalisation
 * sauvegardes

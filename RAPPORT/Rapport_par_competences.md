@@ -467,6 +467,45 @@ router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
 ```
 Ces routes supplémentaires permettent de récupérer rapidement des données, notamment, pour les services administratifs de la Clinique.
 
+2 routes supplémentaires ont été ajoutées à l'A.P.I. afin d'offrir la possibilité à l'infirmier et au médecin de pouvoir lancer les différents phases d'ETL depuis l'interface utilisateur Angular.
+
+L'utilisateur appuie sur "Lancer l'ETL1"
+![UI Opérateur ETL1](./img/analyse_nuit_angular.png "Interface utilisateur Angular pour commander l'exécution du premier ETL qui alimente la table SQL Résultat_nuit")
+
+L'appli _frontend_ envoie une requête HTTP contenant les 3 paramètres à transmettre au script d'ETL vers l'API Node.js.
+```js
+router.get('/lancerETL1', lancerScript);
+
+function lancerScript(req, res) {
+
+    const pythonProcess = spawn('python', [
+        "./pipeline_etl_pandas.py",
+        req.query.id_nuit,
+        req.query.id_medecin_validateur,
+        req.query.commentaire_medical
+       
+    ]);
+```
+L'API _backend_ valide l'exécution de l'ETL et notifie du bon déroulement de son lancement à l'appli _frontend_.
+
+```ts
+this.routes.lancerETL1(
+      selectedNuit.id_nuit,
+      selectedMedecin.id_personnel,
+      comment
+    ).subscribe({
+      next: (res) => {
+        console.log("ETL lancé :", res);
+
+        // reset après succès
+        this.commentForm.reset();
+      },
+      error: (err) => {
+        console.error("Erreur ETL :", err);
+        console.log(err.error);}
+    });
+```
+
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
 # C14 – Analyser le besoin et modéliser l'application

@@ -166,22 +166,7 @@ Maintenance des plateformes connectées.
 
 ---
 
-# Traitement 7 – Maintenance du matériel
-
-Le PSAD collecte :
-
-* incidents
-* remplacement des masques
-* changement des tuyaux
-* interventions techniques
-* visites à domicile
-* historique SAV
-
-Ces traitements sont distincts du suivi médical.
-
----
-
-# Traitement 8 – Suivi de l'observance
+# Traitement 7 – Suivi de l'observance
 
 Objectifs :
 

@@ -185,6 +185,57 @@ ngOnInit(): void {          //Fonctions qui seront exécutées dès le chargemen
 
     - Python pour le nettoyage des données, le calcul des indicateurs, la création du rapport médical, la génération des courbes, l'enregistrement des données dans un datalake, l'alimentation d'une base sqlite analytique
 
+```
+```
+    Exemple d'une fonction python permettant l'alimentation d'une table de la base analytique en calculant des alertes :
+```
+```py
+# definition de la fonction avec en paramètre les informations que l'on souhaite enregistrer
+def alimenter_faits_suivi_cpap_jour(id_suivi_source, id_patient, date_jour, duree_utilisation_h, iah_residuel, 
+                                    fuites_l_min, nb_evenements, qualite_donnee, id_suivi_le_plus_proche, chemin_db=DB_PATH):
+    connexion = sqlite3.connect(chemin_db) #ouverture de la connexion vers sqlite
+
+    try:    #ici on determine les alertes
+        alerte_observance_insuffisante = 1 if duree_utilisation_h < 4 else 0
+        alerte_iah_eleve = 1 if iah_residuel > 5 else 0
+
+        df_cpap = pd.DataFrame([{       # ici on crée le dataFrame pandas contenant un dictionnaire
+            "id_suivi_source": id_suivi_source,
+            "id_patient": id_patient,
+            "id_temps": int(date_jour),
+            "duree_utilisation_h": duree_utilisation_h,
+            "iah_residuel": iah_residuel,
+            "fuites_l_min": fuites_l_min,
+            "nb_evenements": nb_evenements,
+            "qualite_donnee": qualite_donnee,
+            "id_suivi_le_plus_proche": id_suivi_le_plus_proche,
+            "alerte_observance_insuffisante": alerte_observance_insuffisante,
+            "alerte_iah_eleve": alerte_iah_eleve
+        }])
+
+        import traceback    # ici on import un module permettant  d'afficher plus en détail le contenu d'eventuelles erreurs
+
+        try:
+            df_cpap.to_sql(   # insertion du dataFrame dans la base sqlite
+                "faits_suivi_cpap_jour",
+                connexion,
+                if_exists="append",
+                index=False
+            )
+        except Exception:   # si ca echoue, affichage de l'erreur complète
+            traceback.print_exc()
+            raise  # ici on relance l'insertion si il y a eu erreur
+
+    except Exception as e:
+        print(type(e))
+        print(e)
+        raise
+
+    finally:
+        connexion.close()  #fermeture de la connexion
+```
+
+
     - JavaScript avec Express et NodeJs pour la création de l'API permettant l'utilisation de routes et requètes nécessaires à la communication entre le front et le back
 
     - Streamlit pour les résultats des nuits avec prédiction de comorbidités

@@ -467,13 +467,15 @@ La figure suivante présente l'architecture fonctionnelle du projet ainsi que le
 Cette modélisation permet de comprendre le fonctionnement global du système :
 
 1. Le patient réalise une nuit d'étude.
-2. Les événements respiratoires sont enregistrés dans MySQL et les données des capteurs sont récupérées depuis un fichier CSV.
-3. L'opérateur sélectionne la nuit, choisit le médecin validateur et ajoute un commentaire infirmier.
-4. L'application Opérateur déclenche automatiquement l'ETL1.
-5. L'ETL1 traite les données, calcule les indicateurs médicaux, met à jour MySQL, génère le rapport médical, les courbes et alimente le datalake SQLite.
-6. Le médecin consulte ensuite les résultats dans l'application Résultats avec IA, ajoute son commentaire et valide le diagnostic.
-7. Cette validation déclenche automatiquement l'ETL3, qui alimente la base analytique (modèle galaxie).
-8. La base analytique est ensuite utilisée par le Dashboard CPAP pour les analyses et par le module IA Comorbidités, qui entraîne un modèle Random Forest afin de prédire les comorbidités les plus probables.
+2. Les données proviennent de deux sources : les événements respiratoires enregistrés dans MySQL et les données des capteurs contenues dans un fichier CSV.
+3. L'opérateur sélectionne la nuit à traiter, choisit le médecin validateur et saisit un commentaire infirmier.
+4. L'Application Opérateur déclenche automatiquement l'ETL1.
+5. L'ETL1 traite les données, calcule les indicateurs médicaux, met à jour MySQL, génère le rapport médical au format TXT, les courbes au format PNG et alimente le datalake SQLite.
+6. L'opérateur peut également sélectionner un patient afin de déclencher l'ETL2, qui récupère les données quotidiennes du traitement CPAP et alimente la base analytique.
+7. Le médecin consulte ensuite les résultats dans l'Application Résultats avec IA, visualise les courbes et la prédiction des comorbidités, ajoute un commentaire médical puis valide le diagnostic.
+8. Cette validation déclenche automatiquement l'ETL3, qui alimente la base analytique (modèle galaxie) avec les résultats validés.
+9. Le médecin peut ensuite consulter le Dashboard CPAP, qui exploite la base analytique afin d'afficher les alertes, le suivi quotidien des patients, les indicateurs et les statistiques.
+10. La base analytique est également utilisée par le module IA Comorbidités, qui s'appuie sur un modèle Random Forest pour prédire les comorbidités les plus probables.
 
 ---
 

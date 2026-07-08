@@ -441,7 +441,17 @@ Pour ce projet, il est question de convertir notre modèle relationnel en modèl
 - 
 Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ et _frontend_ ainsi qu'avec nos stockages de données.
 
-
+```ts
+router.post('/login', loginController.connexionUtilisateur);
+router.get('/job', loginController.findJob);
+router.get('/getPersonnel', loginController.getPersonnel);
+router.get('/getInfoPersonnel', loginController.getInfoPersonnel);
+router.post('/changeNamePersonnel', loginController.changeNamePersonnel);
+router.post('/changePrenomPersonnel', loginController.changePrenomPersonnel);
+router.post('/changeEmailPersonnel', loginController.changeEmailPersonnel);
+router.post('/changePhonePersonnel', loginController.changePhonePersonnel);
+router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
+```
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
 C14. **Analyser le besoin d'application d'un commanditaire intégrant un service d'intelligence artificielle**, en rédigeant les spécifications fonctionneles et en le modélisant, dans le respect des standards d'utilisabilité et d'accessibilité, afin d'établir avec précision les objectifs de développement correspondant au besin et à la faisabilité technique.

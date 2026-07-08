@@ -430,19 +430,114 @@ def charger_fait_nuit(id_patient, conn_sqlite):
 ## C4 : modélisation des données (schéma Galaxy + dimsuivipatient)
 
 **Créer une base de données** dans le respect du RGPD en élaborant les modèles conceptuels et physiques des données à partir des données préparées et en programmant leur import afin de stocker le jeu de données du projet.
-
+[Modèle relationnel de données](./modele_relationnel_donnees.pdf)
 Nos services recommandent l'usage d'une base_analytique plus adaptée à l'entraînement d'IA. Celle-ci est composée des même données que notre base MySQL mais le modèle utilisé pour leur stockage est un modèle en étoile.
 
 Pour ce projet, il est question de convertir notre modèle relationnel en modèle multidimensionnel. Nous avons d'abord établit les tables de faits en identifiant les données qui nous permettent de faire des liens entre les tables et qui sont communs aux tables de faits afin de dégager des dimensions pour notre modèle étoilé.
 
+En étudiant le schéma de la base relationnelle ainsi que le fonctionnement des ETL, nous pouvons partir du principe que la notion de 'nuit' régit le premier ETL.
+```
+PATIENT --------------------- NUIT_ETUDE ---------------- APPAREIL_PSG
+                                 |
+                          id_nuit (PK)
+                          date
+                          type
+                          ...
+                                 │
+                                 │
+                ┌────────────────┴─────────────┐
+                │                              │
+                ▼                              ▼
 
+      RESULTAT_NUIT               EVENEMENT_RESPIRATOIRE
+      ----------------            ------------------------
+      id_resultat (PK)            id_evenement (PK)
+      IAH                         type
+      saturation                  durée
+      sommeil                     heure
+```
+
+Toutefois, c'est bien la notion de 'patient' qui régit les 2 ETL suivants.
+```
+PATIENT -------------------- APPAREIL_CPAP ------------- APPAREIL
+                                  |
+                          id_appareil (PK/FK)
+                          pression
+                          masque
+                          ...
+                                  │
+                                  │
+                 ┌────────────────┴────────────────┐
+                 │                                 │
+                 ▼                                 ▼
+
+      SUIVI_CPAP_JOUR                BILAN_MENSUEL_CPAP
+      -----------------              --------------------
+      id_suivi (PK)                  id_bilan (PK)
+      date                           année
+      durée                          mois
+      IAH                            observance
+      fuite                          ...
+```
+
+Il est ensuite important de procéder à la modélisation des données en étoile pour concevvoir la base de données analytique.
+
+Autour des tables de faits, nous identifions les dimensions 'nuit', 'temps', 'patient' et 'suivi' qui permet d'aggréger les données de suivi pour analyse.
+
+[Modèle-Etoile](./Modèle étoile faits nuits.pdf)
 
 
 ## C5 : API/accès aux données (procédures stockées utilisées)
 
 **Développer une API mettant à disposition le jeu de données** en utilisant l'architecture REST afin de permettre l'exploitation du jeu de données par les autres composants du projet.
 
-Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ et _frontend_ ainsi qu'avec nos stockages de données.
+Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ (API Node.js) et _frontend_ (Angular/Streamlit) ainsi qu'avec nos stockages de données (SQL, SQLite).
+
+Le parcours de l'utilisateur peut être schématisé ainsi :
+```
+                                PERSONNEL
+                           -------------------
+                           id_personnel (PK)
+                           nom
+                           prénom
+                           ...
+                              ▲
+                 ┌────────────┴─────────────┐
+                 │                          │
+             MEDECIN                  INFIRMIER
+          id_personnel (PK)        id_personnel (PK)
+
+
+                                  │
+                                  │ réalise
+                                  │
+                                  ▼
+
+PATIENT --------------------- CONSULTATION -------------------- MEDECIN
+---------                     ----------------                 ---------
+id_patient (PK)           id_consultation (PK)          id_personnel (FK)
+nom                        date_consultation
+prénom                     motif
+date_naissance             compte_rendu
+...
+   │
+   │ possède
+   ▼
+
+COMORBIDITE
+-----------------------
+id_comorbidite (PK)
+libellé
+
+       ▲
+       │
+       │ N:N
+       │
+PATIENT_COMORBIDITE
+-----------------------
+id_patient (FK)
+id_comorbidite (FK)
+```
 
 Notre configuration de l'API Node.js permet de proposer un point d'entréee principal qui invite à s'authentifier afin d'accéder aux fonctionnalités des ETL et de visualisation des données.
 

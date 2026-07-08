@@ -254,7 +254,7 @@ def charger_dim_temps (conn_sqlite):
 
 ```
 
-   - Requête de récupération des données MySQL pour alimenter la table dim_patient :
+- Requête de récupération des données MySQL pour alimenter la table dim_patient :
 
 ```bash
 def charger_dim_patient(id_patient, conn_sqlite):
@@ -369,7 +369,7 @@ BEGIN
 END
 ```
    
-   - Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
+- Appel de la procédure stockée "recuperation_donnees_pour_faits_nuit_base_analytique" dans MySQL pour alimenter la table fait_nuit :
 ```bash
 def charger_fait_nuit(id_patient, conn_sqlite):
     cursor_sqlite = conn_sqlite.cursor()
@@ -430,19 +430,176 @@ def charger_fait_nuit(id_patient, conn_sqlite):
 ## C4 : modélisation des données (schéma Galaxy + dimsuivipatient)
 
 **Créer une base de données** dans le respect du RGPD en élaborant les modèles conceptuels et physiques des données à partir des données préparées et en programmant leur import afin de stocker le jeu de données du projet.
-
+[Modèle relationnel de données](./modele_relationnel_donnees.pdf)
 Nos services recommandent l'usage d'une base_analytique plus adaptée à l'entraînement d'IA. Celle-ci est composée des même données que notre base MySQL mais le modèle utilisé pour leur stockage est un modèle en étoile.
 
 Pour ce projet, il est question de convertir notre modèle relationnel en modèle multidimensionnel. Nous avons d'abord établit les tables de faits en identifiant les données qui nous permettent de faire des liens entre les tables et qui sont communs aux tables de faits afin de dégager des dimensions pour notre modèle étoilé.
 
+En étudiant le schéma de la base relationnelle ainsi que le fonctionnement des ETL, nous pouvons partir du principe que la notion de 'nuit' régit le premier ETL.
+```
+PATIENT --------------------- NUIT_ETUDE ---------------- APPAREIL_PSG
+                                 |
+                          id_nuit (PK)
+                          date
+                          type
+                          ...
+                                 │
+                                 │
+                ┌────────────────┴─────────────┐
+                │                              │
+                ▼                              ▼
 
+      RESULTAT_NUIT               EVENEMENT_RESPIRATOIRE
+      ----------------            ------------------------
+      id_resultat (PK)            id_evenement (PK)
+      IAH                         type
+      saturation                  durée
+      sommeil                     heure
+```
+
+Toutefois, c'est bien la notion de 'patient' qui régit les 2 ETL suivants.
+```
+PATIENT -------------------- APPAREIL_CPAP ------------- APPAREIL
+                                  |
+                          id_appareil (PK/FK)
+                          pression
+                          masque
+                          ...
+                                  │
+                                  │
+                 ┌────────────────┴────────────────┐
+                 │                                 │
+                 ▼                                 ▼
+
+      SUIVI_CPAP_JOUR                BILAN_MENSUEL_CPAP
+      -----------------              --------------------
+      id_suivi (PK)                  id_bilan (PK)
+      date                           année
+      durée                          mois
+      IAH                            observance
+      fuite                          ...
+```
+
+Il est ensuite important de procéder à la modélisation des données en étoile pour concevvoir la base de données analytique.
+
+Autour des tables de faits, nous identifions les dimensions 'nuit', 'temps', 'patient' et 'suivi' qui permet d'aggréger les données de suivi pour analyse.
+
+[Modèle-Etoile](./Modèle étoile faits nuits.pdf)
 
 
 ## C5 : API/accès aux données (procédures stockées utilisées)
-**Développer une API mettant à disposition le jeu de données** en utilisant l'architecture REST afin de permettre l'exploitation du jeu de données par les autres composants du projet.
-- 
-Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ et _frontend_ ainsi qu'avec nos stockages de données.
 
+**Développer une API mettant à disposition le jeu de données** en utilisant l'architecture REST afin de permettre l'exploitation du jeu de données par les autres composants du projet.
+
+Nous avons fait le choix de Node.js afin de déployer rapidement une API qui puisse établir un lien durable entre nos applications _backend_ (API Node.js) et _frontend_ (Angular/Streamlit) ainsi qu'avec nos stockages de données (SQL, SQLite).
+
+Le parcours de l'utilisateur peut être schématisé ainsi :
+```
+                                PERSONNEL
+                           -------------------
+                           id_personnel (PK)
+                           nom
+                           prénom
+                           ...
+                              ▲
+                 ┌────────────┴─────────────┐
+                 │                          │
+             MEDECIN                  INFIRMIER
+          id_personnel (PK)        id_personnel (PK)
+
+
+                                  │
+                                  │ réalise
+                                  │
+                                  ▼
+
+PATIENT --------------------- CONSULTATION -------------------- MEDECIN
+---------                     ----------------                 ---------
+id_patient (PK)           id_consultation (PK)          id_personnel (FK)
+nom                        date_consultation
+prénom                     motif
+date_naissance             compte_rendu
+...
+   │
+   │ possède
+   ▼
+
+COMORBIDITE
+-----------------------
+id_comorbidite (PK)
+libellé
+
+       ▲
+       │
+       │ N:N
+       │
+PATIENT_COMORBIDITE
+-----------------------
+id_patient (FK)
+id_comorbidite (FK)
+```
+
+Notre configuration de l'API Node.js permet de proposer un point d'entréee principal qui invite à s'authentifier afin d'accéder aux fonctionnalités des ETL et de visualisation des données.
+
+```ts
+router.post('/login', loginController.connexionUtilisateur);
+```
+La route ```/login``` permet donc à Angular d'interroger la base de données afin d'authentifier l'utilisateur en foncction de son adresse électronique et son mot de passe. Si l'utilisateur existe et qu'il renseigne le bon mot de passe, il accède aux interfaces utilisateurs suivantes.
+
+```ts
+router.get('/job', loginController.findJob);
+```
+La route ```/job``` est configurée afin d'être sollicitée par Angular qui utilise ce canal pour récupérer le rôle de l'utilisateur et appliquer les permissions d'accès aux données.
+
+```ts
+router.get('/getPersonnel', loginController.getPersonnel);
+router.get('/getInfoPersonnel', loginController.getInfoPersonnel);
+router.post('/changeNamePersonnel', loginController.changeNamePersonnel);
+router.post('/changePrenomPersonnel', loginController.changePrenomPersonnel);
+router.post('/changeEmailPersonnel', loginController.changeEmailPersonnel);
+router.post('/changePhonePersonnel', loginController.changePhonePersonnel);
+router.post('/changeActifPersonnel', loginController.changeActifPersonnel);
+```
+Ces routes supplémentaires permettent de récupérer rapidement des données, notamment, pour les services administratifs de la Clinique.
+
+2 routes supplémentaires ont été ajoutées à l'A.P.I. afin d'offrir la possibilité à l'infirmier et au médecin de pouvoir lancer les différents phases d'ETL depuis l'interface utilisateur Angular.
+
+L'utilisateur appuie sur "Lancer l'ETL1"
+![UI Opérateur ETL1](./img/analyse_nuit_angular.png "Interface utilisateur Angular pour commander l'exécution du premier ETL qui alimente la table SQL Résultat_nuit")
+
+L'appli _frontend_ envoie une requête HTTP contenant les 3 paramètres à transmettre au script d'ETL vers l'API Node.js.
+```js
+router.get('/lancerETL1', lancerScript);
+
+function lancerScript(req, res) {
+
+    const pythonProcess = spawn('python', [
+        "./pipeline_etl_pandas.py",
+        req.query.id_nuit,
+        req.query.id_medecin_validateur,
+        req.query.commentaire_medical
+       
+    ]);
+```
+L'API _backend_ valide l'exécution de l'ETL et notifie du bon déroulement de son lancement à l'appli _frontend_.
+
+```ts
+this.routes.lancerETL1(
+      selectedNuit.id_nuit,
+      selectedMedecin.id_personnel,
+      comment
+    ).subscribe({
+      next: (res) => {
+        console.log("ETL lancé :", res);
+
+        // reset après succès
+        this.commentForm.reset();
+      },
+      error: (err) => {
+        console.error("Erreur ETL :", err);
+        console.log(err.error);}
+    });
+```
 
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)

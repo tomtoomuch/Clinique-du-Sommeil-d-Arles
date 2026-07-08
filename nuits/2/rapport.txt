@@ -9,7 +9,7 @@ Patient          : Isabelle Vernet
 Nuit d'étude      : #2
 Date              : 2024-11-05
 Type d'examen     : polygraphie
-Médecin validateur: Dr Isabelle Faure
+Médecin validateur: Dr Samia Bencherif
 
 ------------------------------------------------------------
   RÉSUMÉ DE LA NUIT
@@ -43,7 +43,7 @@ Ronflements forts (>70dB)         : 0
 SAHOS léger
 
 Commentaire médical :
-lnll
+test
 
 ------------------------------------------------------------
   COURBES JOINTES
@@ -55,5 +55,5 @@ lnll
 
 ============================================================
   Rapport généré automatiquement par le pipeline ETL.
-  Validé le 2026-06-26 par Dr Faure.
+  Validé le 2026-07-08 par Dr Bencherif.
 ============================================================

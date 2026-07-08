@@ -70,10 +70,10 @@ Suivi médical.
 **Données**
 
 * fumeur
-
+* conso alcool
 * examens
 * comptes rendus
-* allergies
+* comorbidités
 * paramètres cliniques
 
 ---
@@ -85,13 +85,9 @@ Suivi médical.
 * polygraphie
 * polysomnographie
 * oxymétrie
-* fréquence cardiaque
-* saturation
-* débit respiratoire
+* tension systolique et diastolique
+* évènements respiratoires
 * mouvements thoraciques
-* EEG
-* EMG
-* EOG
 
 ---
 
@@ -108,7 +104,7 @@ Prescription du dispositif médical.
 * prescription
 * diagnostic
 * paramètres de pression
-* compte rendu médical
+* compte rendu médical ??
 * niveau de sévérité de l'apnée
 * informations administratives nécessaires à la prise en charge
 
@@ -121,19 +117,14 @@ Prescription du dispositif médical.
 
 # Traitement 5 – Installation du dispositif PPC (Prestataire)
 
-Ce traitement est généralement réalisé sous la responsabilité propre du prestataire de santé à domicile.
+Ce traitement est généralement réalisé sous la responsabilité propre du prestataire de santé à domicile. Ces données sont transmises depuis les relevés de la machine du prestataire à la Clinique du Sommeil.
 
 ## Données traitées
 
 * coordonnées
 * adresse d'installation
-* disponibilité du patient
-* historique des interventions
 * numéro de série de l'appareil
 * masque utilisé
-* accessoires fournis
-* compte rendu d'installation
-* formation du patient
 
 ## Finalités
 
@@ -155,7 +146,7 @@ Le dispositif peut transmettre automatiquement :
 * pression délivrée
 * fuites
 * évènements respiratoires
-* qualité du masque
+* type de masque
 * alertes techniques
 * données de fonctionnement
 
@@ -167,15 +158,11 @@ Suivi thérapeutique.
 
 ### Prestataire
 
-Maintenance.
+Maintenance. Observance.
 
 ### Fabricant (selon le modèle)
 
 Maintenance des plateformes connectées.
-
-### Hébergeur HDS
-
-Stockage sécurisé.
 
 ---
 

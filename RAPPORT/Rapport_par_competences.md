@@ -2,7 +2,9 @@
 
 Ce projet d'ETL en 3 phases à destination des personnels de la Clinique du Sommeil d'Arles intègre plusieurs applications ainsi que plusieurs sources de données, de bonnes qualités généralement. Cette API, intégrée au système d'information permettra aux infirmiers, médecins, patients, personnels non-soignants et fournisseurs d'appareils de bénéficier d'un accès simple aux données dont chacun.e a besoin afin de pratiquer son métier efficacement. Par ailleurs, cette API intégrant un modèle d'IA permettra également d'analyser et d'émettre des prédictions quant aux alertes et schémas physiologiques décelables qui pourraient expliquer l'occurrence des alertes.
 
-Le flux de travail que nous proposons avec cette API implique une Base de Données Relationnelle (mysql), des fichiers CSV provenant des appareils et relevés de somnographies et polygraphies, une base_analytique ainsi qu'un datalake locaux à des fins d'analyse, d'entraînement du modèle et d'anonymisation des données.
+Le flux de travail que nous proposons avec cette API implique une Base de Données Relationnelle (mysql), des fichiers CSV provenant des appareils et relevés de somnographies et polygraphies, une base_analytique ainsi qu'un datalake locaux à des fins d'analyse, d'entraînement du modèle et d'anonymisation des données. Il s'articule autour de 3 processus d'ETL et se structure ainsi :
+
+![Modélisation pipeline-complet](./img/logique-clinique-sommeil.jpg "Diagramme logique du projet d'ETL pour la Clinique du Sommeil d'Arles")
 
 ## C1, C2 : extraction et requêtes SQL (rappel ETL1, ETL3, mini ETL CPAP)
 C1 . **Automatiser l'extraction de données** depuis un service web, une page web (scraping*), un fichier de données, une base de données et un système big data* en programmant le script* adapté afin de pérenniser la collecte des données nécessaires au projet. 
@@ -150,9 +152,6 @@ except MySQLError as erreur:
 ## Conclusion
 
 L’ETL1 répond à la compétence C1 car il automatise l’ensemble du processus d’extraction, de transformation et de chargement (ETL) des données. Il récupère automatiquement les données provenant du fichier CSV et de MySQL, calcule les indicateurs médicaux, génère les documents nécessaires et alimente les bases de données utilisées par les applications métiers.
-
-
- 
 ### Lola
 **C2.Développer les requêtes de type SQL d'extraction des données** depuis un système de gestion de base de données et un système big data en appliquant le langage de requête propre au système afin de préparer la collecte des données nécessaires au projet.
 
@@ -429,7 +428,8 @@ def charger_fait_nuit(id_patient, conn_sqlite):
 ## C4 : modélisation des données (schéma Galaxy + dimsuivipatient)
 
 **Créer une base de données** dans le respect du RGPD en élaborant les modèles conceptuels et physiques des données à partir des données préparées et en programmant leur import afin de stocker le jeu de données du projet.
-- Non réaliser pour le moment
+
+
 
 
 ## C5 : API/accès aux données (procédures stockées utilisées)
@@ -439,7 +439,8 @@ def charger_fait_nuit(id_patient, conn_sqlite):
 
 ## C14,C15 : analyse du besoin et conception technique (vos choix d'architexture pour les 2 applications)
 C14. **Analyser le besoin d'application d'un commanditaire intégrant un service d'intelligence artificielle**, en rédigeant les spécifications fonctionneles et en le modélisant, dans le respect des standards d'utilisabilité et d'accessibilité, afin d'établir avec précision les objectifs de développement correspondant au besin et à la faisabilité technique.
-
+- ETL 1: est une interface qui répond aux besoins du médecin validateur d'avoir toutes les informations nécéssaires pour poser une diagnostique sur le patient et de pouvoir poser son diagnostic et de valider sur le même interface.
+- ETL 3: permet en lien avec l'ETL1 d'automatiser l'alimentation de la base de données analytique pour l'entrainement de l'IA. Car plus celle-ci sera alimenter par les données de la clinique plus son taux de fiabilité pour les diagnostics (Obésité etc.), sera fiable.
 # C14 – Analyser le besoin et modéliser l'application
 
 ## Contexte
@@ -508,8 +509,6 @@ Les applications ont été conçues en respectant des principes simples d'utilis
 ## Conclusion
 
 Cette analyse fonctionnelle nous a permis de définir les besoins métier, de modéliser le parcours utilisateur et d'identifier précisément le rôle des applications, des pipelines ETL et des bases de données avant le développement du projet.
-
-
 
 
 ### Lola
@@ -703,7 +702,6 @@ ngOnInit(): void {          //Fonctions qui seront exécutées dès le chargemen
 - Pour la partie Back-End : 
 
     - Python pour le nettoyage des données, le calcul des indicateurs, la création du rapport médical, la génération des courbes, l'enregistrement des données dans un datalake, l'alimentation d'une base sqlite analytique
-
 ```
 ```
     Exemple d'une fonction python permettant l'alimentation d'une table de la base analytique en calculant des alertes :
